@@ -1,0 +1,26 @@
+{
+  "incident": {
+    "id": "INC-2025-04821",
+    "category": "cert-expiry",
+    "service": "checkout-api",
+    "priority": "P3",
+    "summary": "TLS certificate for checkout-api.prod expires in 48 hours"
+  },
+  "risk_score": 0.25,
+  "blast_radius": {
+    "services_affected": 1,
+    "environments": ["production"],
+    "estimated_users_impacted": 0
+  },
+  "plan": {
+    "steps": ["renew_certificate", "validate_service_health"],
+    "tools": ["renew_cert", "validate_service_health"],
+    "estimated_duration_seconds": 120
+  },
+  "context": {
+    "similar_incidents_last_90d": 12,
+    "last_change_failure_for_service": null,
+    "service_health_current": "healthy",
+    "change_window": "standard-hours"
+  }
+}

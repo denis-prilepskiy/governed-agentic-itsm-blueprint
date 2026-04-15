@@ -1,0 +1,49 @@
+%% Reference Architecture: Governed Agentic AI for ITSM
+%% Render with: https://mermaid.live or any Mermaid-compatible tool
+%% GitHub renders .mermaid files natively in the browser.
+
+flowchart LR
+  %% Inputs
+  U[User channels<br/>portal · chat · email · voice] --> ITSM[ITSM System of Record<br/>incidents · changes · KB]
+  OBS[Observability<br/>metrics · logs · traces · events] --> EVT[Event intake & normalisation]
+  CI[Service model<br/>CMDB · service map] --> CTX[Context enrichment]
+
+  EVT --> TRIAGE[Triage Agent<br/>classify · dedupe · route]
+  ITSM --> TRIAGE
+  CTX --> TRIAGE
+
+  TRIAGE --> DIAG[Diagnostics Agent<br/>query telemetry · build hypothesis]
+  DIAG --> PLAN[Remediation Planner Agent<br/>propose steps + tool calls]
+
+  %% Control plane
+  subgraph CP[Control plane]
+    POLICY[Policy engine · policy-as-code<br/>risk scoring · SoD · allowlists]
+    APPROVAL[Human approval<br/>on-call · CAB · change owner]
+    AUDIT[Immutable audit log<br/>who · what · why · when]
+    EVAL[Evaluation harness<br/>offline replay · A/B · regression]
+  end
+
+  PLAN --> POLICY
+  POLICY -->|allow| RUN[Tool runner<br/>idempotency · rate limits · budgets]
+  POLICY -->|needs approval| APPROVAL --> RUN
+  POLICY -->|deny| ITSM
+
+  %% Tool layer
+  subgraph TL[Tool layer]
+    MCP[MCP tool servers<br/>typed contracts + versioning]
+  end
+
+  RUN --> MCP --> SYS[Enterprise systems<br/>infra · IAM · DNS · CI/CD · SaaS]
+  SYS --> VALIDATE[Validation checks<br/>SLO · synthetic · health probes]
+  VALIDATE -->|pass| CLOSE[Close/resolve + comms]
+  VALIDATE -->|fail| ROLLBACK[Rollback path] --> SYS
+
+  %% Evidence & feedback
+  TRIAGE --> EVID[Evidence bundle store<br/>signals · plan · decision · logs · validation]
+  DIAG --> EVID
+  POLICY --> EVID
+  RUN --> EVID
+  VALIDATE --> EVID
+  EVID --> AUDIT
+  EVID --> EVAL
+  CLOSE --> ITSM

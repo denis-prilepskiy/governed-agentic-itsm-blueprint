@@ -1,0 +1,27 @@
+{
+  "incident": {
+    "id": "INC-2025-04847",
+    "category": "deployment-failure",
+    "service": "checkout-api",
+    "priority": "P1",
+    "summary": "checkout-api rollback required after failed deployment, error rate 15%"
+  },
+  "risk_score": 0.91,
+  "blast_radius": {
+    "services_affected": 5,
+    "environments": ["production"],
+    "estimated_users_impacted": 85000
+  },
+  "plan": {
+    "steps": ["rollback_deployment", "validate_service_health", "notify_stakeholders"],
+    "tools": ["deploy", "validate_service_health", "notify"],
+    "estimated_duration_seconds": 300
+  },
+  "context": {
+    "similar_incidents_last_90d": 1,
+    "last_change_failure_for_service": "2025-04-10T09:15:00Z",
+    "service_health_current": "critical",
+    "change_window": "outside-hours",
+    "dependent_services": ["payments-gateway", "refunds-service", "billing-api", "analytics-pipeline", "notification-service"]
+  }
+}

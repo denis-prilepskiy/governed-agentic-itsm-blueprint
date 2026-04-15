@@ -1,0 +1,56 @@
+{
+  "tool": "TOOL_NAME",
+  "version": "0.1.0",
+  "description": "DESCRIPTION — what this tool does and its scope of impact.",
+  "owner": "OWNING_TEAM",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "PARAM_1": {
+        "type": "string",
+        "description": "DESCRIPTION"
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": true,
+        "description": "If true, return planned steps without executing"
+      },
+      "traceparent": {
+        "type": "string",
+        "description": "W3C traceparent header for distributed tracing"
+      },
+      "incident_id": {
+        "type": "string",
+        "description": "Linked incident ID for evidence trail"
+      }
+    },
+    "required": ["PARAM_1"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "exit_status": {
+        "type": "string",
+        "enum": ["PLANNED", "SUCCESS", "FAILED", "ROLLED_BACK"]
+      },
+      "execution_id": {
+        "type": "string"
+      },
+      "raw_logs_ref": {
+        "type": "string",
+        "description": "URI to execution logs"
+      }
+    },
+    "required": ["exit_status"]
+  },
+  "safety": {
+    "idempotent": "BOOLEAN — can this tool be safely called twice with the same input?",
+    "supports_dry_run": "BOOLEAN — does it have a plan-only mode?",
+    "max_calls_per_incident": "INTEGER — cap on invocations per incident",
+    "requires_validation": "BOOLEAN — must validate_service_health be called after?",
+    "rollback_tool": "STRING or null — name of the rollback tool, if one exists",
+    "blast_radius": "single-instance | single-service | multi-service | global",
+    "privilege_level": "observer | service-operator | platform-admin",
+    "audit_required": true
+  }
+}

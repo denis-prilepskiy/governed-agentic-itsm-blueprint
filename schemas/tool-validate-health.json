@@ -1,0 +1,81 @@
+{
+  "tool": "validate_service_health",
+  "version": "1.0.0",
+  "description": "Verify service restoration using SLO checks, synthetic probes, and health endpoints. Must be called after every remediation action.",
+  "owner": "platform-engineering",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "service": {
+        "type": "string",
+        "description": "Service identifier to validate"
+      },
+      "time_window_seconds": {
+        "type": "integer",
+        "default": 300,
+        "description": "Observation window for health assessment"
+      },
+      "checks": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "List of validation checks to execute",
+        "examples": ["slo_error_budget_ok", "synthetic_checkout_pass", "latency_p95_ok", "health_endpoint_200"]
+      },
+      "traceparent": {
+        "type": "string",
+        "description": "W3C traceparent header for distributed tracing"
+      },
+      "incident_id": {
+        "type": "string",
+        "description": "Linked incident ID for evidence trail"
+      }
+    },
+    "required": ["service", "checks"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "enum": ["PASS", "FAIL", "INCONCLUSIVE"],
+        "description": "Overall validation outcome"
+      },
+      "check_results": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "check": { "type": "string" },
+            "status": { "type": "string", "enum": ["PASS", "FAIL", "INCONCLUSIVE"] },
+            "detail": { "type": "string" }
+          }
+        },
+        "description": "Per-check results with details"
+      },
+      "failed_checks": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Names of checks that failed"
+      },
+      "evidence_links": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "URIs to dashboards, metrics, or traces supporting the verdict"
+      },
+      "validated_at": {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "required": ["status"]
+  },
+  "safety": {
+    "idempotent": true,
+    "supports_dry_run": false,
+    "max_calls_per_incident": 3,
+    "requires_validation": false,
+    "blast_radius": "read-only",
+    "privilege_level": "observer",
+    "audit_required": true
+  }
+}

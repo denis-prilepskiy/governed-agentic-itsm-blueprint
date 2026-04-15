@@ -1,0 +1,46 @@
+%% Auto-Remediation Pipeline: Governed Incident Resolution
+%% Render with: https://mermaid.live or any Mermaid-compatible tool
+
+sequenceDiagram
+  autonumber
+  participant Obs as Observability
+  participant Or as Orchestrator
+  participant Ta as Triage Agent
+  participant Da as Diagnostics Agent
+  participant Pe as Policy Engine
+  participant Ha as Human Approver
+  participant Tr as Tool Runner
+  participant Ts as Target System
+  participant Va as Validator
+  participant It as ITSM Record
+
+  Obs->>Or: Alert/event bundle (signal + metadata)
+  Or->>Ta: Create/Update incident draft + context
+  Ta->>It: Incident created/updated (classification, service, priority)
+
+  Or->>Da: Fetch telemetry evidence (logs/metrics/traces)
+  Da-->>Or: Hypotheses + confidence + required probes
+
+  Or->>Or: Build remediation plan (steps + tools + budgets)
+  Or->>Pe: Policy check (risk_score, SoD, allowlist, limits)
+
+  alt low risk + policy allows
+    Pe-->>Tr: allow(plan) + constraints
+  else needs approval
+    Pe-->>Ha: approval request + evidence bundle
+    Ha-->>Tr: approve(plan) + constraints
+  else denied
+    Pe-->>It: deny + rationale + next steps
+  end
+
+  Tr->>Ts: execute tool calls (dry-run → apply)
+  Ts-->>Tr: execution logs + outputs
+
+  Tr->>Va: validate service health (SLO + synthetic + smoke)
+  alt validation pass
+    Va-->>It: resolve + attach evidence bundle
+  else validation fail
+    Va-->>Tr: rollback_required(reason)
+    Tr->>Ts: rollback execution
+    Tr-->>It: escalate + attach evidence bundle
+  end

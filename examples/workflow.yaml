@@ -1,0 +1,65 @@
+# Governed auto-remediation workflow declaration
+# Adapt scope.services and scope.allowed_categories to your environment.
+# This file defines the autonomy boundaries for a starter scope.
+
+workflow:
+  name: incident-auto-remediation-v1
+  version: "1.0.0"
+  objective: "Reduce MTTR for recurrent low-risk incidents without increasing change failure rate"
+
+  scope:
+    services: ["checkout-api", "payments-gateway"]
+    allowed_categories: ["cert-expiry", "svc-restart", "dns-misconfig"]
+    change_windows_allowed: ["standard-hours", "low-traffic"]
+    excluded_environments: ["production-critical-tier0"]
+
+  agents:
+    - name: triage
+      responsibilities: ["classify", "deduplicate", "link_ci", "open_or_update_ticket"]
+    - name: diagnostics
+      responsibilities: ["collect_logs", "collect_metrics", "collect_traces", "suggest_root_cause"]
+    - name: remediation
+      responsibilities: ["select_runbook", "generate_plan", "execute_via_tools"]
+    - name: change_risk
+      responsibilities: ["risk_score", "decide_approval_route", "prepare_rollback"]
+
+  autonomy_budget:
+    max_actions_per_incident: 3
+    max_tool_calls_per_incident: 5
+    max_runtime_seconds: 180
+
+  guardrails:
+    must_use_dry_run_first: true
+    require_human_approval_if:
+      - "risk_score >= 0.60"
+      - "blast_radius.services_affected > 1"
+      - "tools contains any_of: ['deploy', 'iam_change', 'dns_write']"
+    never_allow:
+      - "tools contains any_of: ['delete_data', 'disable_audit', 'mass_restart']"
+    rate_limits:
+      max_auto_remediations_per_hour: 10
+      max_auto_remediations_per_service_per_hour: 3
+
+  evidence_bundle:
+    must_attach_before_execute:
+      - "signal_context"
+      - "service_context"
+      - "diagnostics_summary"
+      - "remediation_plan"
+      - "policy_decision"
+      - "rollback_plan"
+    must_attach_after_execute:
+      - "execution_log"
+      - "validation_results"
+      - "rollback_results_if_any"
+
+  observability:
+    trace_propagation: "W3C traceparent"
+    metrics_prefix: "itsm.agent."
+    required_metrics:
+      - "triage_duration_seconds"
+      - "diagnostics_duration_seconds"
+      - "policy_decision"
+      - "tool_execution_duration_seconds"
+      - "validation_result"
+      - "rollback_count"

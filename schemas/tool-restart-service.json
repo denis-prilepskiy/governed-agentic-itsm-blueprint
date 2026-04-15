@@ -1,0 +1,79 @@
+{
+  "tool": "restart_service",
+  "version": "1.2.0",
+  "description": "Restart a single service instance in the allowed namespace. Supports dry-run mode for plan verification before execution.",
+  "owner": "platform-engineering",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "service": {
+        "type": "string",
+        "description": "Service identifier (must be in workflow scope)"
+      },
+      "instance_id": {
+        "type": "string",
+        "description": "Specific instance to restart"
+      },
+      "reason": {
+        "type": "string",
+        "description": "Human-readable reason, attached to audit log"
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": true,
+        "description": "If true, return planned steps without executing"
+      },
+      "traceparent": {
+        "type": "string",
+        "description": "W3C traceparent header for distributed tracing"
+      },
+      "incident_id": {
+        "type": "string",
+        "description": "Linked incident ID for evidence trail"
+      }
+    },
+    "required": ["service", "instance_id", "reason"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "planned_steps": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Steps that will be (or were) executed"
+      },
+      "execution_id": {
+        "type": "string",
+        "description": "Unique execution identifier for audit"
+      },
+      "exit_status": {
+        "type": "string",
+        "enum": ["PLANNED", "SUCCESS", "FAILED", "ROLLED_BACK"],
+        "description": "Outcome of the tool invocation"
+      },
+      "started_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "ended_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "raw_logs_ref": {
+        "type": "string",
+        "description": "URI to execution logs in the evidence store"
+      }
+    },
+    "required": ["exit_status"]
+  },
+  "safety": {
+    "idempotent": false,
+    "supports_dry_run": true,
+    "max_calls_per_incident": 1,
+    "requires_validation": true,
+    "rollback_tool": "restart_service_rollback",
+    "blast_radius": "single-instance",
+    "privilege_level": "service-operator",
+    "audit_required": true
+  }
+}
