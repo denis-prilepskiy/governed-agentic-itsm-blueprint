@@ -28,12 +28,19 @@
     "decision": {
       "type": "string",
       "enum": ["auto-approve", "needs-human-approval", "deny"],
-      "description": "Summary verdict"
+      "description": "Summary verdict — must match guardrails.rego output"
     },
     "reasons": {
       "type": "array",
       "items": { "type": "string" },
+      "minItems": 1,
       "description": "Human-readable reasons for the decision"
+    },
+    "risk_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Computed risk score that informed the decision"
     },
     "constraints": {
       "type": "object",
@@ -44,12 +51,6 @@
         "must_validate_after": { "type": "boolean" },
         "timeout_seconds": { "type": "integer" }
       }
-    },
-    "risk_score": {
-      "type": "number",
-      "minimum": 0,
-      "maximum": 1,
-      "description": "Computed risk score that informed the decision"
     },
     "approval": {
       "type": ["object", "null"],
@@ -67,5 +68,12 @@
       "required": ["approved_by", "approved_at"]
     }
   },
-  "required": ["decision_id", "evaluated_at", "allow", "decision", "reasons"]
+  "required": [
+    "decision_id",
+    "evaluated_at",
+    "allow",
+    "require_approval",
+    "decision",
+    "reasons"
+  ]
 }
