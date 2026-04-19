@@ -1,0 +1,88 @@
+name: Validate artefacts
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install pyyaml
+
+      - name: Validate JSON files
+        run: |
+          echo "Validating JSON files..."
+          errors=0
+          for f in $(find . -name "*.json" -not -path "./.git/*"); do
+            if python3 -c "import json; json.load(open('$f'))" 2>/dev/null; then
+              echo "  OK: $f"
+            else
+              echo "  FAIL: $f"
+              errors=$((errors + 1))
+            fi
+          done
+          if [ $errors -gt 0 ]; then
+            echo "::error::$errors JSON file(s) failed validation"
+            exit 1
+          fi
+          echo "All JSON files valid."
+
+      - name: Validate YAML files
+        run: |
+          echo "Validating YAML files..."
+          errors=0
+          for f in $(find . -name "*.yaml" -o -name "*.yml" | grep -v ".github"); do
+            if python3 -c "import yaml; yaml.safe_load(open('$f'))" 2>/dev/null; then
+              echo "  OK: $f"
+            else
+              echo "  FAIL: $f"
+              errors=$((errors + 1))
+            fi
+          done
+          if [ $errors -gt 0 ]; then
+            echo "::error::$errors YAML file(s) failed validation"
+            exit 1
+          fi
+          echo "All YAML files valid."
+
+      - name: Install OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/v1.4.2/opa_linux_amd64_static
+          chmod 755 opa
+          sudo mv opa /usr/local/bin/
+
+      - name: Validate Rego policies (syntax check)
+        run: |
+          echo "Checking Rego syntax..."
+          for f in policies/*.rego; do
+            opa check "$f" && echo "  OK: $f" || exit 1
+          done
+          echo "All Rego files pass syntax check."
+
+      - name: Evaluate test incidents against main policy
+        run: |
+          echo "Evaluating test incidents..."
+          for f in examples/test-incidents/*.json; do
+            echo "  Input: $f"
+            result=$(opa eval \
+              --data policies/guardrails.rego \
+              --input "$f" \
+              "data.itsm.guardrails.decision" \
+              --format pretty)
+            echo "  Decision: $result"
+            echo ""
+          done
+          echo "All test incidents evaluated successfully."
