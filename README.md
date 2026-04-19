@@ -2,7 +2,7 @@
 
 > **Start with the control plane, not the agent. The agent is the easy part.**
 
-[![Validate artefacts](https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint/actions/workflows/validate.yml/badge.svg)](https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint/actions/workflows/validate.yml)
+[![Validate artefacts](../../actions/workflows/validate.yml/badge.svg)](../../actions/workflows/validate.yml)
 
 **Status: v0.2 — reference blueprint / starter kit.** This is a working collection of schemas, policies, diagrams, and examples. It is not a runnable demo stack or production-ready framework. See [What this repo is / is not](#what-this-repo-is--is-not).
 
@@ -46,8 +46,8 @@ If you're looking for a vendor-specific implementation guide (ServiceNow, JSM, B
 | Change risk prompt | [`examples/change-risk-prompt.md`](examples/change-risk-prompt.md) | Structured prompt template for LLM-driven change risk assessment |
 | Example evidence bundle | [`examples/evidence/`](examples/evidence/) | Complete evidence package for a cert-renewal auto-remediation |
 | Test incidents (3) | [`examples/test-incidents/`](examples/test-incidents/) | Low, medium, high-risk scenarios for policy testing |
-| Maturity model | [`MATURITY.md`](MATURITY.md) | L0–L4 progression from manual ITSM to governed autonomy |
-| CI validation | [`.github/workflows/validate.yml`](.github/workflows/validate.yml) | Automated JSON, YAML, and Rego validation on every push |
+| Maturity model | [`MATURITY.md`](MATURITY.md) | L0–L4 progression from manual ITSM to governed autonomy, with repo artefact mapping |
+| CI validation | [`.github/workflows/validate.yml`](.github/workflows/validate.yml) | JSON/YAML/Rego syntax, workflow schema, evidence structure, and semantic decision assertions |
 
 ## Architecture overview
 
@@ -103,19 +103,19 @@ chmod 755 opa && sudo mv opa /usr/local/bin/
 
 # Test: low-risk incident (should auto-approve)
 opa eval \
-  --data policies/guardrails.rego \
+  --data policies/ \
   --input examples/test-incidents/low-risk-cert-expiry.json \
   "data.itsm.guardrails.decision"
 
 # Test: medium-risk incident (should require approval)
 opa eval \
-  --data policies/guardrails.rego \
+  --data policies/ \
   --input examples/test-incidents/medium-risk-multi-service.json \
   "data.itsm.guardrails.decision"
 
-# Test: high-risk incident (should require approval — contains "deploy" tool)
+# Test: high-risk incident (should require approval — contains "rollback_deployment" tool)
 opa eval \
-  --data policies/guardrails.rego \
+  --data policies/ \
   --input examples/test-incidents/high-risk-deploy.json \
   "data.itsm.guardrails.decision"
 ```
@@ -139,7 +139,7 @@ The `policies/` directory contains a main guardrails policy and 7 focused module
 
 | Module | File | What it enforces |
 |--------|------|-----------------|
-| **Main guardrails** | `guardrails.rego` | Orchestrates all rules: auto-approve / require-approval / deny |
+| **Main guardrails** | `guardrails.rego` | Primary decision policy; aggregates violations from all modules when loaded with `--data policies/`; includes fallback logic for standalone use |
 | Prohibited tools | `deny_prohibited_tools.rego` | Hard-block on `delete_data`, `disable_audit`, `mass_restart` |
 | Risk threshold | `require_approval_by_risk.rego` | Approval if `risk_score >= 0.60` |
 | Blast radius | `require_approval_by_blast_radius.rego` | Approval if `services_affected > 1` |
