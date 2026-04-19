@@ -14,7 +14,7 @@
   },
   "plan": {
     "steps": ["rollback_deployment", "validate_service_health", "notify_stakeholders"],
-    "tools": ["deploy", "validate_service_health", "notify"],
+    "tools": ["rollback_deployment", "validate_service_health", "notify_stakeholders"],
     "estimated_duration_seconds": 300
   },
   "context": {
@@ -22,6 +22,12 @@
     "last_change_failure_for_service": "2025-04-10T09:15:00Z",
     "service_health_current": "critical",
     "change_window": "outside-hours",
-    "dependent_services": ["payments-gateway", "refunds-service", "billing-api", "analytics-pipeline", "notification-service"]
+    "dependent_services": [
+      "payments-gateway",
+      "refunds-service",
+      "billing-api",
+      "analytics-pipeline",
+      "notification-service"
+    ]
   }
 }
