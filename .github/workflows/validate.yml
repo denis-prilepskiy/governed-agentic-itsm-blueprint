@@ -20,9 +20,9 @@ jobs:
           python-version: "3.12"
 
       - name: Install Python dependencies
-        run: pip install pyyaml
+        run: pip install pyyaml jsonschema
 
-      - name: Validate JSON files
+      - name: Validate JSON files (parse check)
         run: |
           echo "Validating JSON files..."
           errors=0
@@ -34,13 +34,10 @@ jobs:
               errors=$((errors + 1))
             fi
           done
-          if [ $errors -gt 0 ]; then
-            echo "::error::$errors JSON file(s) failed validation"
-            exit 1
-          fi
+          [ $errors -eq 0 ] || { echo "::error::$errors JSON file(s) failed parse validation"; exit 1; }
           echo "All JSON files valid."
 
-      - name: Validate YAML files
+      - name: Validate YAML files (parse check)
         run: |
           echo "Validating YAML files..."
           errors=0
@@ -52,11 +49,69 @@ jobs:
               errors=$((errors + 1))
             fi
           done
-          if [ $errors -gt 0 ]; then
-            echo "::error::$errors YAML file(s) failed validation"
-            exit 1
-          fi
+          [ $errors -eq 0 ] || { echo "::error::$errors YAML file(s) failed parse validation"; exit 1; }
           echo "All YAML files valid."
+
+      - name: Validate workflow declaration against schema
+        run: |
+          python3 - <<'EOF'
+          import json, yaml, sys
+          import jsonschema
+
+          with open("schemas/workflow.schema.json") as f:
+              schema = json.load(f)
+          with open("examples/workflow.yaml") as f:
+              instance = yaml.safe_load(f)
+
+          try:
+              jsonschema.validate(instance, schema)
+              print("OK: examples/workflow.yaml validates against schemas/workflow.schema.json")
+          except jsonschema.ValidationError as e:
+              print(f"FAIL: {e.message}")
+              sys.exit(1)
+          EOF
+
+      - name: Validate evidence bundle structure
+        run: |
+          python3 - <<'EOF'
+          import json, sys
+
+          with open("examples/evidence/example-evidence-bundle.json") as f:
+              bundle = json.load(f)
+
+          # Check required top-level fields (from evidence-bundle.schema.json)
+          required = ["bundle_id", "incident_id", "created_at", "pre_execution"]
+          missing = [k for k in required if k not in bundle]
+          if missing:
+              print(f"FAIL: missing required fields: {missing}")
+              sys.exit(1)
+
+          # Check required pre_execution fields
+          pre = bundle["pre_execution"]
+          pre_required = ["signal_context", "service_context", "diagnostics_summary",
+                          "remediation_plan", "policy_decision", "rollback_plan"]
+          missing_pre = [k for k in pre_required if k not in pre]
+          if missing_pre:
+              print(f"FAIL: missing required pre_execution fields: {missing_pre}")
+              sys.exit(1)
+
+          # Check policy_decision matches policy-decision.schema.json required fields
+          pd = pre["policy_decision"]
+          pd_required = ["decision_id", "evaluated_at", "allow", "require_approval",
+                         "decision", "reasons"]
+          missing_pd = [k for k in pd_required if k not in pd]
+          if missing_pd:
+              print(f"FAIL: missing required policy_decision fields: {missing_pd}")
+              sys.exit(1)
+
+          # Check decision value is valid
+          valid_decisions = {"auto-approve", "needs-human-approval", "deny"}
+          if pd["decision"] not in valid_decisions:
+              print(f"FAIL: decision '{pd['decision']}' not in {valid_decisions}")
+              sys.exit(1)
+
+          print("OK: examples/evidence/example-evidence-bundle.json structure valid")
+          EOF
 
       - name: Install OPA
         uses: open-policy-agent/setup-opa@v2
@@ -65,23 +120,52 @@ jobs:
 
       - name: Validate Rego policies (syntax check)
         run: |
-          echo "Checking Rego syntax..."
-          for f in policies/*.rego; do
-            opa check "$f" && echo "  OK: $f" || exit 1
-          done
+          echo "Checking Rego syntax for entire policies/ directory..."
+          opa check policies/
           echo "All Rego files pass syntax check."
 
-      - name: Evaluate test incidents against main policy
+      - name: Evaluate test incidents — semantic assertions
         run: |
-          echo "Evaluating test incidents..."
-          for f in examples/test-incidents/*.json; do
-            echo "  Input: $f"
-            result=$(opa eval \
-              --data policies/guardrails.rego \
-              --input "$f" \
-              "data.itsm.guardrails.decision" \
-              --format pretty)
-            echo "  Decision: $result"
-            echo ""
-          done
-          echo "All test incidents evaluated successfully."
+          echo "Evaluating test incidents against full policy pack..."
+          echo ""
+
+          check_decision() {
+            local input_file="$1"
+            local expected="$2"
+            local actual
+            actual=$(opa eval \
+              --data policies/ \
+              --input "$input_file" \
+              "data.itsm.guardrails.decision.decision" \
+              --format raw 2>/dev/null | tr -d '[:space:]')
+            if [ "$actual" = "$expected" ]; then
+              echo "  PASS: $(basename $input_file) → $actual"
+            else
+              echo "  FAIL: $(basename $input_file)"
+              echo "        expected: $expected"
+              echo "        got:      $actual"
+              return 1
+            fi
+          }
+
+          errors=0
+
+          check_decision \
+            "examples/test-incidents/low-risk-cert-expiry.json" \
+            "auto-approve" || errors=$((errors + 1))
+
+          check_decision \
+            "examples/test-incidents/medium-risk-multi-service.json" \
+            "needs-human-approval" || errors=$((errors + 1))
+
+          check_decision \
+            "examples/test-incidents/high-risk-deploy.json" \
+            "needs-human-approval" || errors=$((errors + 1))
+
+          check_decision \
+            "examples/test-incidents/low-risk-cert-expiry.execution.json" \
+            "auto-approve" || errors=$((errors + 1))
+
+          echo ""
+          [ $errors -eq 0 ] || { echo "::error::$errors semantic assertion(s) failed"; exit 1; }
+          echo "All semantic assertions passed."
