@@ -21,7 +21,7 @@
       "environment": "production"
     },
     "diagnostics_summary": {
-      "probable_cause": "TLS certificate for checkout-api.prod.example.com expires in 47.3 hours. Certificate was issued by internal-ca, auto-renewal was not configured.",
+      "probable_cause": "TLS certificate for checkout-api.prod.example.com expires in 47.3 hours. Certificate was issued by internal-ca; auto-renewal was not configured.",
       "confidence": 0.98,
       "supporting_evidence": [
         "x509 expiry check: 2025-04-17T01:15:00Z",
@@ -48,26 +48,26 @@
     "policy_decision": {
       "decision_id": "pd-2025-04821-001",
       "evaluated_at": "2025-04-15T02:03:15Z",
-      "policy_version": "v1.2.0-abc1234",
+      "policy_version": "v0.2.0",
       "allow": true,
       "require_approval": false,
       "decision": "auto-approve",
-      "reasons": ["low-risk, allowlisted category and tools"],
+      "reasons": ["all policy checks passed"],
+      "risk_score": 0.25,
       "constraints": {
         "max_tool_calls": 5,
         "must_use_dry_run_first": true,
         "must_validate_after": true
       },
-      "risk_score": 0.25,
       "approval": null
     },
     "rollback_plan": {
       "steps": [
-        "Restore previous certificate from vault backup",
-        "Restart TLS termination proxy"
+        "Restore previous certificate from backup (manual intervention required)",
+        "Restart TLS termination proxy after certificate restoration"
       ],
-      "rollback_tools": ["restore_certificate_from_vault"],
-      "estimated_duration_seconds": 60
+      "estimated_duration_seconds": 60,
+      "_note": "Automated rollback tool not available for certificate restoration; human-assisted rollback procedure documented in runbook CERT-ROLLBACK-001."
     }
   },
   "post_execution": {
@@ -85,7 +85,12 @@
           },
           "output": {
             "exit_status": "PLANNED",
-            "planned_steps": ["Connect to internal-ca", "Generate CSR", "Issue certificate", "Install to ingress"]
+            "planned_steps": [
+              "Connect to internal-ca",
+              "Generate CSR",
+              "Issue certificate",
+              "Install to ingress"
+            ]
           },
           "exit_status": "PLANNED",
           "started_at": "2025-04-15T02:03:18Z",

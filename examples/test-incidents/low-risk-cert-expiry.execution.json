@@ -1,0 +1,75 @@
+{
+  "_comment": "Enriched fixture — includes workflow declaration and plan.tool_calls. Used to test enforce_dry_run, enforce_change_window, enforce_environment_exclusions, and enforce_tool_call_budget modules. Run with: opa eval --data policies/ --input examples/test-incidents/low-risk-cert-expiry.execution.json \"data.itsm.guardrails.decision\"",
+  "incident": {
+    "id": "INC-2025-04821",
+    "category": "cert-expiry",
+    "service": "checkout-api",
+    "priority": "P3",
+    "summary": "TLS certificate for checkout-api.prod expires in 48 hours"
+  },
+  "risk_score": 0.25,
+  "blast_radius": {
+    "services_affected": 1,
+    "environments": ["production"],
+    "estimated_users_impacted": 0
+  },
+  "plan": {
+    "steps": ["renew_certificate", "validate_service_health"],
+    "tools": ["renew_certificate", "validate_service_health"],
+    "estimated_duration_seconds": 90,
+    "tool_calls": [
+      {
+        "tool_name": "renew_certificate",
+        "dry_run": true,
+        "input": {
+          "service": "checkout-api",
+          "endpoint": "checkout-api.prod.example.com",
+          "certificate_authority": "internal-ca",
+          "reason": "INC-2025-04821"
+        }
+      },
+      {
+        "tool_name": "renew_certificate",
+        "dry_run": false,
+        "input": {
+          "service": "checkout-api",
+          "endpoint": "checkout-api.prod.example.com",
+          "certificate_authority": "internal-ca",
+          "reason": "INC-2025-04821"
+        }
+      },
+      {
+        "tool_name": "validate_service_health",
+        "dry_run": false,
+        "input": {
+          "service": "checkout-api",
+          "checks": ["tls_handshake_success", "certificate_expiry_ok", "latency_p95_ok"]
+        }
+      }
+    ]
+  },
+  "context": {
+    "similar_incidents_last_90d": 12,
+    "last_change_failure_for_service": null,
+    "service_health_current": "healthy",
+    "change_window": "standard-hours",
+    "environments": ["production"]
+  },
+  "workflow": {
+    "name": "incident-auto-remediation-v1",
+    "scope": {
+      "services": ["checkout-api", "payments-gateway"],
+      "allowed_categories": ["cert-expiry", "svc-restart", "dns-misconfig"],
+      "change_windows_allowed": ["standard-hours", "low-traffic"],
+      "excluded_environments": ["production-critical-tier0"]
+    },
+    "autonomy_budget": {
+      "max_actions_per_incident": 3,
+      "max_tool_calls_per_incident": 5,
+      "max_runtime_seconds": 180
+    },
+    "guardrails": {
+      "must_use_dry_run_first": true
+    }
+  }
+}

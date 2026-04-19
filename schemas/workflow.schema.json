@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workflow.schema.json",
+  "title": "Workflow Declaration",
+  "description": "Schema for the governed auto-remediation workflow declaration (examples/workflow.yaml). Defines autonomy boundaries, guardrails, and evidence requirements for an agentic ITSM pipeline.",
+  "type": "object",
+  "properties": {
+    "workflow": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "objective": { "type": "string" },
+        "scope": {
+          "type": "object",
+          "properties": {
+            "services": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+            "allowed_categories": { "type": "array", "items": { "type": "string" } },
+            "change_windows_allowed": { "type": "array", "items": { "type": "string" } },
+            "excluded_environments": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["services", "allowed_categories"]
+        },
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "responsibilities": { "type": "array", "items": { "type": "string" } }
+            },
+            "required": ["name", "responsibilities"]
+          }
+        },
+        "autonomy_budget": {
+          "type": "object",
+          "properties": {
+            "max_actions_per_incident": { "type": "integer", "minimum": 1 },
+            "max_tool_calls_per_incident": { "type": "integer", "minimum": 1 },
+            "max_runtime_seconds": { "type": "integer", "minimum": 1 }
+          },
+          "required": ["max_actions_per_incident", "max_tool_calls_per_incident", "max_runtime_seconds"]
+        },
+        "guardrails": {
+          "type": "object",
+          "properties": {
+            "must_use_dry_run_first": { "type": "boolean" },
+            "require_human_approval_if": { "type": "array", "items": { "type": "string" } },
+            "never_allow": { "type": "array", "items": { "type": "string" } },
+            "rate_limits": {
+              "type": "object",
+              "properties": {
+                "max_auto_remediations_per_hour": { "type": "integer" },
+                "max_auto_remediations_per_service_per_hour": { "type": "integer" }
+              }
+            }
+          },
+          "required": ["must_use_dry_run_first"]
+        },
+        "evidence_bundle": {
+          "type": "object",
+          "properties": {
+            "must_attach_before_execute": { "type": "array", "items": { "type": "string" } },
+            "must_attach_after_execute": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["must_attach_before_execute", "must_attach_after_execute"]
+        },
+        "observability": {
+          "type": "object",
+          "properties": {
+            "trace_propagation": { "type": "string" },
+            "metrics_prefix": { "type": "string" },
+            "required_metrics": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "required": ["name", "scope", "autonomy_budget", "guardrails", "evidence_bundle"]
+    }
+  },
+  "required": ["workflow"]
+}
