@@ -12,6 +12,27 @@ This model ties **autonomy** to **required controls** — you cannot safely adva
 | **L3: Supervised agent** | Execute runbooks, validate, rollback | Act within allowlist | Risk scoring, blast-radius limits, audit trail | Auto-resolution rate, MTTR |
 | **L4: Governed autonomy** | E2E pipeline: detect–resolve–learn | Act within policy; escalate exceptions | Full governance stack (ISO 42001, NIST, EU AI Act) | Cost/incident, SLO adherence, zero automation-caused incidents |
 
+## Repo artefacts by maturity level
+
+This table shows which artefacts in this repo become relevant at each maturity level.
+
+| Artefact | Path | Enables |
+|----------|------|---------|
+| Architecture diagrams | `diagrams/` | L1+ (shared vocabulary for design conversations) |
+| Workflow declaration | `examples/workflow.yaml` | L2+ (defines autonomy boundaries before building) |
+| Tool contract template | `schemas/tool-schema-template.json` | L2+ (formalise tool interfaces before execution) |
+| Tool contracts (8) | `schemas/tool-*.json` | L2–L3 (typed, testable contracts for each action) |
+| Policy engine (main) | `policies/guardrails.rego` | L2–L3 (risk-gate every action; require approval) |
+| Policy modules (7) | `policies/enforce_*.rego`, `policies/require_*.rego` | L3+ (extend policy for change windows, budgets, dry-run) |
+| Evidence bundle schema | `schemas/evidence-bundle.schema.json` | L3 (pre-execution evidence required before acting) |
+| Validation contract | `schemas/tool-validate-health.json` | L3 (validate service health before closing incident) |
+| Policy decision schema | `schemas/policy-decision.schema.json` | L3 (structured, auditable policy output) |
+| Test incidents | `examples/test-incidents/` | L3 (offline calibration before production) |
+| Example evidence bundle | `examples/evidence/` | L3 (reference for what a complete audit record looks like) |
+| CI validation | `.github/workflows/validate.yml` | L3–L4 (automated correctness checks, semantic assertions) |
+| Maturity model | `MATURITY.md` | All levels |
+| Governance mapping | README governance section | L3–L4 (ISO 42001, NIST, EU AI Act) |
+
 ## How to use this model
 
 ### Assess your current level
