@@ -1,0 +1,38 @@
+{
+  "tool": "restart_service_rollback",
+  "version": "1.0.0",
+  "description": "Rollback companion for restart_service. Attempts to restore the previous instance state if the restart caused degradation. Referenced by restart_service.safety.rollback_tool.",
+  "owner": "platform-engineering",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "service": { "type": "string" },
+      "instance_id": { "type": "string" },
+      "original_execution_id": { "type": "string", "description": "execution_id from the restart_service call being rolled back" },
+      "reason": { "type": "string" },
+      "traceparent": { "type": "string" },
+      "incident_id": { "type": "string" }
+    },
+    "required": ["service", "instance_id", "original_execution_id", "reason"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "exit_status": { "type": "string", "enum": ["SUCCESS", "FAILED", "NOT_NEEDED"] },
+      "execution_id": { "type": "string" },
+      "detail": { "type": "string" },
+      "raw_logs_ref": { "type": "string" }
+    },
+    "required": ["exit_status"]
+  },
+  "safety": {
+    "idempotent": true,
+    "supports_dry_run": false,
+    "max_calls_per_incident": 1,
+    "requires_validation": true,
+    "rollback_tool": null,
+    "blast_radius": "single-instance",
+    "privilege_level": "service-operator",
+    "audit_required": true
+  }
+}

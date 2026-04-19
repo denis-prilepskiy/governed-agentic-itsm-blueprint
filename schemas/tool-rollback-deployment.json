@@ -1,0 +1,45 @@
+{
+  "tool": "rollback_deployment",
+  "version": "1.0.0",
+  "description": "Roll back a service deployment to the previous known-good version. This is a HIGH-RISK tool: it always requires human approval and validation.",
+  "owner": "platform-engineering",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "service": { "type": "string" },
+      "target_version": { "type": "string", "description": "Version to roll back to (e.g., git SHA, image tag)" },
+      "current_version": { "type": "string", "description": "Currently deployed version" },
+      "rollback_strategy": { "type": "string", "enum": ["blue-green", "canary-revert", "full-redeploy"], "default": "blue-green" },
+      "reason": { "type": "string" },
+      "dry_run": { "type": "boolean", "default": true },
+      "traceparent": { "type": "string" },
+      "incident_id": { "type": "string" },
+      "change_id": { "type": "string", "description": "Change record for audit trail" }
+    },
+    "required": ["service", "target_version", "current_version", "reason", "change_id"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "exit_status": { "type": "string", "enum": ["PLANNED", "SUCCESS", "FAILED", "ROLLED_BACK"] },
+      "execution_id": { "type": "string" },
+      "deployed_version": { "type": "string" },
+      "deployment_duration_seconds": { "type": "number" },
+      "instances_updated": { "type": "integer" },
+      "raw_logs_ref": { "type": "string" }
+    },
+    "required": ["exit_status"]
+  },
+  "safety": {
+    "idempotent": false,
+    "supports_dry_run": true,
+    "max_calls_per_incident": 1,
+    "requires_validation": true,
+    "rollback_tool": null,
+    "blast_radius": "single-service",
+    "privilege_level": "platform-admin",
+    "audit_required": true,
+    "always_requires_approval": true,
+    "notes": "Classified as high-risk tool in guardrails.rego — always routed to human approval regardless of risk score."
+  }
+}

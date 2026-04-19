@@ -1,0 +1,41 @@
+{
+  "tool": "open_change_record",
+  "version": "1.0.0",
+  "description": "Create a change record in the ITSM system of record to track a remediation action. This is a prerequisite for any mutating tool execution in governed environments.",
+  "owner": "service-management",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "service": { "type": "string" },
+      "change_type": { "type": "string", "enum": ["standard", "normal", "emergency"] },
+      "summary": { "type": "string" },
+      "description": { "type": "string" },
+      "planned_start": { "type": "string", "format": "date-time" },
+      "planned_end": { "type": "string", "format": "date-time" },
+      "rollback_plan": { "type": "string" },
+      "linked_incident_id": { "type": "string" },
+      "risk_score": { "type": "number", "minimum": 0, "maximum": 1 },
+      "traceparent": { "type": "string" }
+    },
+    "required": ["service", "change_type", "summary", "linked_incident_id"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "exit_status": { "type": "string", "enum": ["SUCCESS", "FAILED"] },
+      "change_id": { "type": "string", "description": "ITSM change record ID" },
+      "change_url": { "type": "string", "description": "URL to the change record" }
+    },
+    "required": ["exit_status"]
+  },
+  "safety": {
+    "idempotent": true,
+    "supports_dry_run": false,
+    "max_calls_per_incident": 2,
+    "requires_validation": false,
+    "rollback_tool": null,
+    "blast_radius": "record-only",
+    "privilege_level": "service-operator",
+    "audit_required": true
+  }
+}

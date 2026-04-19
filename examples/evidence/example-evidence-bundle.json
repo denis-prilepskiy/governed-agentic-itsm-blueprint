@@ -1,0 +1,150 @@
+{
+  "bundle_id": "eb-2025-04821-001",
+  "incident_id": "INC-2025-04821",
+  "change_id": "CHG-2025-08844",
+  "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+  "created_at": "2025-04-15T02:03:12Z",
+  "completed_at": "2025-04-15T02:06:48Z",
+  "pre_execution": {
+    "signal_context": {
+      "source": "prometheus-alertmanager",
+      "alert_id": "cert-expiry-checkout-api-48h",
+      "severity": "warning",
+      "timestamp": "2025-04-15T02:03:00Z",
+      "raw_payload_ref": "s3://evidence-store/alerts/2025-04-15/cert-expiry-checkout-api.json"
+    },
+    "service_context": {
+      "service": "checkout-api",
+      "service_owner": "payments-team",
+      "tier": "tier-1",
+      "dependencies": ["payments-gateway", "billing-api"],
+      "environment": "production"
+    },
+    "diagnostics_summary": {
+      "probable_cause": "TLS certificate for checkout-api.prod.example.com expires in 47.3 hours. Certificate was issued by internal-ca, auto-renewal was not configured.",
+      "confidence": 0.98,
+      "supporting_evidence": [
+        "x509 expiry check: 2025-04-17T01:15:00Z",
+        "no cert-manager CertificateRequest found for this endpoint",
+        "previous renewal was manual (CHG-2025-03201, 2025-01-14)"
+      ],
+      "telemetry_refs": [
+        "https://grafana.internal/d/cert-monitoring?var-service=checkout-api"
+      ]
+    },
+    "remediation_plan": {
+      "steps": [
+        "Verify CA connectivity (dry-run)",
+        "Renew certificate via internal-ca",
+        "Validate new certificate installed and TLS handshake succeeds"
+      ],
+      "tools_required": ["renew_certificate", "validate_service_health"],
+      "estimated_duration_seconds": 90,
+      "blast_radius": {
+        "services_affected": 1,
+        "estimated_users_impacted": 0
+      }
+    },
+    "policy_decision": {
+      "decision_id": "pd-2025-04821-001",
+      "evaluated_at": "2025-04-15T02:03:15Z",
+      "policy_version": "v1.2.0-abc1234",
+      "allow": true,
+      "require_approval": false,
+      "decision": "auto-approve",
+      "reasons": ["low-risk, allowlisted category and tools"],
+      "constraints": {
+        "max_tool_calls": 5,
+        "must_use_dry_run_first": true,
+        "must_validate_after": true
+      },
+      "risk_score": 0.25,
+      "approval": null
+    },
+    "rollback_plan": {
+      "steps": [
+        "Restore previous certificate from vault backup",
+        "Restart TLS termination proxy"
+      ],
+      "rollback_tools": ["restore_certificate_from_vault"],
+      "estimated_duration_seconds": 60
+    }
+  },
+  "post_execution": {
+    "execution_log": {
+      "execution_id": "exec-2025-04821-001",
+      "tool_calls": [
+        {
+          "tool": "renew_certificate",
+          "input": {
+            "service": "checkout-api",
+            "endpoint": "checkout-api.prod.example.com",
+            "certificate_authority": "internal-ca",
+            "reason": "Certificate expires in 47.3 hours (INC-2025-04821)",
+            "dry_run": true
+          },
+          "output": {
+            "exit_status": "PLANNED",
+            "planned_steps": ["Connect to internal-ca", "Generate CSR", "Issue certificate", "Install to ingress"]
+          },
+          "exit_status": "PLANNED",
+          "started_at": "2025-04-15T02:03:18Z",
+          "ended_at": "2025-04-15T02:03:22Z"
+        },
+        {
+          "tool": "renew_certificate",
+          "input": {
+            "service": "checkout-api",
+            "endpoint": "checkout-api.prod.example.com",
+            "certificate_authority": "internal-ca",
+            "reason": "Certificate expires in 47.3 hours (INC-2025-04821)",
+            "dry_run": false
+          },
+          "output": {
+            "exit_status": "SUCCESS",
+            "new_expiry": "2025-07-14T02:03:30Z",
+            "certificate_fingerprint": "SHA256:a1b2c3d4e5f6..."
+          },
+          "exit_status": "SUCCESS",
+          "started_at": "2025-04-15T02:03:25Z",
+          "ended_at": "2025-04-15T02:04:10Z"
+        }
+      ],
+      "raw_logs_ref": "s3://evidence-store/executions/2025-04-15/exec-2025-04821-001.log"
+    },
+    "validation_results": {
+      "validation_id": "val-2025-04821-001",
+      "validated_at": "2025-04-15T02:06:45Z",
+      "service": "checkout-api",
+      "status": "PASS",
+      "time_window_seconds": 120,
+      "check_results": [
+        {
+          "check": "tls_handshake_success",
+          "status": "PASS",
+          "detail": "TLS 1.3 handshake successful with new certificate"
+        },
+        {
+          "check": "certificate_expiry_ok",
+          "status": "PASS",
+          "detail": "New certificate expires 2025-07-14, 90 days from now",
+          "metric_value": 90,
+          "threshold": 30
+        },
+        {
+          "check": "latency_p95_ok",
+          "status": "PASS",
+          "detail": "p95 latency 42ms, within SLO of 200ms",
+          "metric_value": 42,
+          "threshold": 200
+        }
+      ],
+      "failed_checks": [],
+      "evidence_links": [
+        "https://grafana.internal/d/checkout-api-health?from=1713146580000&to=1713146805000"
+      ],
+      "rollback_recommended": false
+    },
+    "rollback_results": null
+  }
+}

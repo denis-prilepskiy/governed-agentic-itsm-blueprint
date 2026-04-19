@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "policy-decision.schema.json",
+  "title": "Policy Decision",
+  "description": "Output of the policy engine for a remediation plan. Attached to the evidence bundle to document why an action was allowed, escalated, or denied.",
+  "type": "object",
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "description": "Unique identifier for this policy evaluation"
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "policy_version": {
+      "type": "string",
+      "description": "Version or commit hash of the policy pack used"
+    },
+    "allow": {
+      "type": "boolean",
+      "description": "Whether the plan is allowed to proceed (with or without approval)"
+    },
+    "require_approval": {
+      "type": "boolean",
+      "description": "Whether human approval is required before execution"
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["auto-approve", "needs-human-approval", "deny"],
+      "description": "Summary verdict"
+    },
+    "reasons": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Human-readable reasons for the decision"
+    },
+    "constraints": {
+      "type": "object",
+      "description": "Execution constraints imposed by the policy",
+      "properties": {
+        "max_tool_calls": { "type": "integer" },
+        "must_use_dry_run_first": { "type": "boolean" },
+        "must_validate_after": { "type": "boolean" },
+        "timeout_seconds": { "type": "integer" }
+      }
+    },
+    "risk_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Computed risk score that informed the decision"
+    },
+    "approval": {
+      "type": ["object", "null"],
+      "description": "Present only if require_approval was true and approval was obtained",
+      "properties": {
+        "approved_by": { "type": "string" },
+        "approved_at": { "type": "string", "format": "date-time" },
+        "approval_method": {
+          "type": "string",
+          "enum": ["slack", "pagerduty", "email", "cab", "api"],
+          "description": "Channel through which approval was obtained"
+        },
+        "notes": { "type": "string" }
+      },
+      "required": ["approved_by", "approved_at"]
+    }
+  },
+  "required": ["decision_id", "evaluated_at", "allow", "decision", "reasons"]
+}

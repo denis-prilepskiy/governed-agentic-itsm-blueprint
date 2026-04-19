@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation-result.schema.json",
+  "title": "Validation Result",
+  "description": "Output of the post-execution validation step. Determines whether remediation succeeded, whether rollback is needed, and provides evidence links for the audit trail.",
+  "type": "object",
+  "properties": {
+    "validation_id": {
+      "type": "string",
+      "description": "Unique identifier for this validation run"
+    },
+    "validated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "service": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["PASS", "FAIL", "INCONCLUSIVE"],
+      "description": "Overall validation verdict"
+    },
+    "time_window_seconds": {
+      "type": "integer",
+      "description": "How long the validator observed the service before concluding"
+    },
+    "check_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "check": {
+            "type": "string",
+            "description": "Name of the check (e.g., slo_error_budget_ok, synthetic_checkout_pass)"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PASS", "FAIL", "INCONCLUSIVE"]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable detail about the check outcome"
+          },
+          "metric_value": {
+            "type": ["number", "null"],
+            "description": "Measured value, if applicable"
+          },
+          "threshold": {
+            "type": ["number", "null"],
+            "description": "Threshold the metric was compared against"
+          }
+        },
+        "required": ["check", "status"]
+      },
+      "description": "Per-check breakdown"
+    },
+    "failed_checks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Names of checks that failed"
+    },
+    "evidence_links": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "URIs to dashboards, traces, or metrics supporting the verdict"
+    },
+    "rollback_recommended": {
+      "type": "boolean",
+      "description": "Whether the validator recommends triggering rollback"
+    }
+  },
+  "required": ["validation_id", "validated_at", "service", "status", "check_results"]
+}

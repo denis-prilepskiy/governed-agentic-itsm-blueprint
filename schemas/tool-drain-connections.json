@@ -1,0 +1,41 @@
+{
+  "tool": "drain_connections",
+  "version": "1.0.0",
+  "description": "Gracefully drain active connections from a service instance before restart or maintenance. Waits for in-flight requests to complete within a timeout.",
+  "owner": "platform-engineering",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "service": { "type": "string" },
+      "instance_id": { "type": "string" },
+      "drain_timeout_seconds": { "type": "integer", "default": 60, "description": "Max seconds to wait for connections to drain" },
+      "reason": { "type": "string" },
+      "dry_run": { "type": "boolean", "default": true },
+      "traceparent": { "type": "string" },
+      "incident_id": { "type": "string" }
+    },
+    "required": ["service", "instance_id", "reason"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "exit_status": { "type": "string", "enum": ["PLANNED", "SUCCESS", "FAILED", "TIMED_OUT"] },
+      "execution_id": { "type": "string" },
+      "connections_drained": { "type": "integer" },
+      "connections_forced_closed": { "type": "integer" },
+      "drain_duration_seconds": { "type": "number" },
+      "raw_logs_ref": { "type": "string" }
+    },
+    "required": ["exit_status"]
+  },
+  "safety": {
+    "idempotent": true,
+    "supports_dry_run": true,
+    "max_calls_per_incident": 1,
+    "requires_validation": false,
+    "rollback_tool": null,
+    "blast_radius": "single-instance",
+    "privilege_level": "service-operator",
+    "audit_required": true
+  }
+}

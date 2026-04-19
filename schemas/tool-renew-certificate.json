@@ -1,0 +1,40 @@
+{
+  "tool": "renew_certificate",
+  "version": "1.0.0",
+  "description": "Renew a TLS/SSL certificate for a service endpoint. Supports dry-run to verify renewal path and CA connectivity before applying.",
+  "owner": "platform-engineering",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "service": { "type": "string", "description": "Service identifier" },
+      "endpoint": { "type": "string", "description": "FQDN or endpoint for which to renew the certificate" },
+      "certificate_authority": { "type": "string", "description": "CA to use (e.g., letsencrypt, internal-ca)" },
+      "reason": { "type": "string" },
+      "dry_run": { "type": "boolean", "default": true },
+      "traceparent": { "type": "string" },
+      "incident_id": { "type": "string" }
+    },
+    "required": ["service", "endpoint", "reason"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "exit_status": { "type": "string", "enum": ["PLANNED", "SUCCESS", "FAILED"] },
+      "execution_id": { "type": "string" },
+      "new_expiry": { "type": "string", "format": "date-time", "description": "New certificate expiry date" },
+      "certificate_fingerprint": { "type": "string" },
+      "raw_logs_ref": { "type": "string" }
+    },
+    "required": ["exit_status"]
+  },
+  "safety": {
+    "idempotent": true,
+    "supports_dry_run": true,
+    "max_calls_per_incident": 2,
+    "requires_validation": true,
+    "rollback_tool": null,
+    "blast_radius": "single-endpoint",
+    "privilege_level": "service-operator",
+    "audit_required": true
+  }
+}

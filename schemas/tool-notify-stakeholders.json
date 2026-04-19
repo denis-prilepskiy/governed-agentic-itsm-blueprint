@@ -1,0 +1,61 @@
+{
+  "tool": "notify_stakeholders",
+  "version": "1.0.0",
+  "description": "Send notifications to service owners, on-call engineers, or affected teams about an incident or remediation action. Read-only and safe — no system changes.",
+  "owner": "service-management",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "channels": {
+        "type": "array",
+        "items": { "type": "string", "enum": ["slack", "email", "pagerduty", "teams"] },
+        "description": "Notification channels to use"
+      },
+      "recipients": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Team or individual identifiers"
+      },
+      "message_template": {
+        "type": "string",
+        "enum": ["incident-opened", "remediation-started", "remediation-completed", "rollback-triggered", "approval-requested"],
+        "description": "Pre-approved message template"
+      },
+      "context": {
+        "type": "object",
+        "description": "Template variables (incident_id, service, summary, etc.)"
+      },
+      "traceparent": { "type": "string" },
+      "incident_id": { "type": "string" }
+    },
+    "required": ["channels", "recipients", "message_template", "incident_id"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "exit_status": { "type": "string", "enum": ["SUCCESS", "PARTIAL", "FAILED"] },
+      "delivery_results": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "channel": { "type": "string" },
+            "recipient": { "type": "string" },
+            "delivered": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "required": ["exit_status"]
+  },
+  "safety": {
+    "idempotent": true,
+    "supports_dry_run": false,
+    "max_calls_per_incident": 5,
+    "requires_validation": false,
+    "rollback_tool": null,
+    "blast_radius": "notification-only",
+    "privilege_level": "observer",
+    "audit_required": true
+  }
+}
