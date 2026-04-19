@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [0.2.0] - 2025-XX-XX
+## [0.2.0] - 2026-04-19
 
 ### Added
 
@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Additional tool contracts: `tool-renew-certificate.json`, `tool-drain-connections.json`, `tool-rollback-deployment.json`, `tool-notify-stakeholders.json`, `tool-open-change-record.json`, `tool-restart-service-rollback.json`
 - Example evidence bundle: `examples/evidence/example-evidence-bundle.json`
 - CI validation workflow (GitHub Actions): JSON, YAML, and Rego validation on every push/PR
-- Repo hygiene: `.gitignore`, `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`
+- Repo hygiene: `.gitignore`, `.github/ISSUE_TEMPLATE/adaptation-report.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`
 - Status badge and "What this repo is / is not" section in README
 
 ### Changed
@@ -25,7 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Added missing `tool-restart-service-rollback.json` (previously referenced by `tool-restart-service.json` but absent)
 
-## [0.1.0] - 2025-XX-XX
+## [0.1.0] - 2026-04-19
 
 ### Added
 
@@ -36,4 +36,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Change risk prompt template
 - Maturity model (L0–L4)
 - Test incidents: low-risk, medium-risk, high-risk
-- GitHub issue template for adaptation reports
