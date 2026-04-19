@@ -9,7 +9,7 @@ import rego.v1
 
 needs_approval if {
   count(input.workflow.scope.change_windows_allowed) > 0
-  not input.context.change_window in cast_set(input.workflow.scope.change_windows_allowed)
+  not input.context.change_window in input.workflow.scope.change_windows_allowed
 }
 
 violation contains msg if {
