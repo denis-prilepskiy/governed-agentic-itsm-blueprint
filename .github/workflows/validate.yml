@@ -59,10 +59,9 @@ jobs:
           echo "All YAML files valid."
 
       - name: Install OPA
-        run: |
-          curl -L -o opa https://openpolicyagent.org/downloads/v1.4.2/opa_linux_amd64_static
-          chmod 755 opa
-          sudo mv opa /usr/local/bin/
+        uses: open-policy-agent/setup-opa@v2
+        with:
+          version: latest
 
       - name: Validate Rego policies (syntax check)
         run: |
