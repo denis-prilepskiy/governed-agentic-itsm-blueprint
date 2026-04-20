@@ -20,7 +20,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Python dependencies
-        run: pip install pyyaml jsonschema
+        run: pip install pyyaml jsonschema referencing
 
       - name: Validate JSON files (parse check)
         run: |
@@ -68,49 +68,48 @@ jobs:
               print("OK: examples/workflow.yaml validates against schemas/workflow.schema.json")
           except jsonschema.ValidationError as e:
               print(f"FAIL: {e.message}")
+              print(f"Path: {list(e.absolute_path)}")
               sys.exit(1)
           EOF
 
-      - name: Validate evidence bundle structure
+      - name: Validate evidence bundle against multi-file schema
         run: |
           python3 - <<'EOF'
           import json, sys
+          from pathlib import Path
+          from jsonschema import Draft202012Validator
+          from referencing import Registry, Resource
 
+          # Load all schemas in schemas/ and register them by $id
+          schema_dir = Path("schemas")
+          resources = []
+          for schema_path in sorted(schema_dir.glob("*.schema.json")):
+              with open(schema_path) as f:
+                  s = json.load(f)
+              schema_id = s.get("$id", schema_path.name)
+              resources.append((schema_id, Resource.from_contents(s)))
+              print(f"  Registered schema: {schema_id}")
+
+          registry = Registry().with_resources(resources)
+
+          # Load main schema and instance
+          with open("schemas/evidence-bundle.schema.json") as f:
+              main_schema = json.load(f)
           with open("examples/evidence/example-evidence-bundle.json") as f:
-              bundle = json.load(f)
+              instance = json.load(f)
 
-          # Check required top-level fields (from evidence-bundle.schema.json)
-          required = ["bundle_id", "incident_id", "created_at", "pre_execution"]
-          missing = [k for k in required if k not in bundle]
-          if missing:
-              print(f"FAIL: missing required fields: {missing}")
+          # Validate with registry for cross-file $ref resolution
+          validator = Draft202012Validator(main_schema, registry=registry)
+          errors = sorted(validator.iter_errors(instance), key=lambda e: e.path)
+
+          if errors:
+              print("FAIL: evidence bundle failed schema validation")
+              for e in errors:
+                  path = "/".join(str(p) for p in e.absolute_path) or "<root>"
+                  print(f"  {path}: {e.message}")
               sys.exit(1)
 
-          # Check required pre_execution fields
-          pre = bundle["pre_execution"]
-          pre_required = ["signal_context", "service_context", "diagnostics_summary",
-                          "remediation_plan", "policy_decision", "rollback_plan"]
-          missing_pre = [k for k in pre_required if k not in pre]
-          if missing_pre:
-              print(f"FAIL: missing required pre_execution fields: {missing_pre}")
-              sys.exit(1)
-
-          # Check policy_decision matches policy-decision.schema.json required fields
-          pd = pre["policy_decision"]
-          pd_required = ["decision_id", "evaluated_at", "allow", "require_approval",
-                         "decision", "reasons"]
-          missing_pd = [k for k in pd_required if k not in pd]
-          if missing_pd:
-              print(f"FAIL: missing required policy_decision fields: {missing_pd}")
-              sys.exit(1)
-
-          # Check decision value is valid
-          valid_decisions = {"auto-approve", "needs-human-approval", "deny"}
-          if pd["decision"] not in valid_decisions:
-              print(f"FAIL: decision '{pd['decision']}' not in {valid_decisions}")
-              sys.exit(1)
-
-          print("OK: examples/evidence/example-evidence-bundle.json structure valid")
+          print("OK: examples/evidence/example-evidence-bundle.json validates against evidence-bundle.schema.json (with $ref resolution)")
           EOF
 
       - name: Install OPA
