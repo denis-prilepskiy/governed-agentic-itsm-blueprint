@@ -2,7 +2,7 @@
 
 > **Start with the control plane, not the agent. The agent is the easy part.**
 
-[![Validate artefacts](../../actions/workflows/validate.yml/badge.svg)](../../actions/workflows/validate.yml)
+[![Validate artefacts](https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint/actions/workflows/validate.yml/badge.svg)](https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint/actions/workflows/validate.yml)
 
 **Status: v0.2 — reference blueprint / starter kit.** This is a working collection of schemas, policies, diagrams, and examples. It is not a runnable demo stack or production-ready framework. See [What this repo is / is not](#what-this-repo-is--is-not).
 
