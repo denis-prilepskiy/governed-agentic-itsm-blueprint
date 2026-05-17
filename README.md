@@ -3,17 +3,14 @@
 [![DOI](https://zenodo.org/badge/1210947361.svg)](https://doi.org/10.5281/zenodo.20256777)
 [![Validate artefacts](https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint/actions/workflows/validate.yml/badge.svg)](https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint/actions/workflows/validate.yml)
 
-> **Start with the control plane, not the agent. The agent is the easy part.**
+> **Start with the control plane, not the agent.  
+> The agent is the easy part.**
 
 **Status: v0.2 — reference blueprint / starter kit.** This is a working collection of schemas, policies, diagrams, and examples. It is not a runnable demo stack or production-ready framework. See [What this repo is / is not](#what-this-repo-is--is-not).
 
 A vendor-neutral reference architecture and ready-to-use engineering artefacts for shipping **governed agentic AI** in IT Service Management — without joining the [40% of agentic AI projects Gartner predicts will be cancelled](https://www.gartner.com/en/newsroom/press-releases/2025-06-25-gartner-predicts-over-40-percent-of-agentic-ai-projects-will-be-canceled-by-end-of-2027) by 2027.
 
-<!-- If your InfoQ article is published, uncomment and update the link below -->
-<!-- 📄 **Companion article on InfoQ:** [How to Ship Governed Agentic AI in ITSM Without Joining the 40% That Get Cancelled](https://www.infoq.com/articles/...) -->
-
 ---
-
 
 ## Who this is for
 
