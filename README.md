@@ -231,5 +231,5 @@ Apache 2.0 — see [LICENSE](LICENSE).
 
 ---
 
-**Author:** Denis Prilepskiy — AI/ML & Enterprise Architecture, 15+ years in financial services and digital transformation.
-[LinkedIn](https://www.linkedin.com/in/denisprilepskiy/)
+**Author:** Denis Prilepskiy — Agentic AI architect specialising in production-grade multi-agent systems for regulated industries. Senior Enterprise Architect at NTT Data (London). Published in HackerNoon (Top Story) and MIPT Digital (Habr), with IEEE and HBR submissions under review.
+HackerNoon @denisp · [LinkedIn](https://www.linkedin.com/in/denisprilepskiy/)
