@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+title: "Governed Agentic AI for ITSM — A Practical Blueprint"
+version: 0.2.0
+license: "Apache-2.0"
+type: software
+message: "If you use this blueprint, please cite it as below."
+abstract: "A vendor-neutral reference architecture and engineering artefact collection for governing agentic AI in IT Service Management, including tool contracts, OPA/Rego policies, evidence schemas, governance mappings, and an autonomy maturity model."
+authors:
+  - given-names: Denis
+    family-names: Prilepskiy
+    affiliation: "London-based enterprise architect"
+keywords:
+  - agentic AI
+  - ITSM
+  - AIOps
+  - enterprise architecture
+  - AI governance
+  - Open Policy Agent
+  - ISO/IEC 42001
+  - NIST AI RMF
+  - EU AI Act
+repository-code: "https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint"
