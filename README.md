@@ -21,6 +21,7 @@ BibTeX:
   doi       = {10.5281/zenodo.20256777},
   url       = {https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint}
 }
+```
 
 > **Start with the control plane, not the agent.  
 > The agent is the easy part.**
