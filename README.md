@@ -1,5 +1,7 @@
 # Governed Agentic AI for ITSM — A Practical Blueprint
 
+[![DOI](https://zenodo.org/badge/1210947361.svg)](https://doi.org/10.5281/zenodo.20256777)
+
 > **Start with the control plane, not the agent. The agent is the easy part.**
 
 [![Validate artefacts](https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint/actions/workflows/validate.yml/badge.svg)](https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint/actions/workflows/validate.yml)
