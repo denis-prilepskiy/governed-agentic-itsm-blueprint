@@ -1,10 +1,9 @@
 # Governed Agentic AI for ITSM — A Practical Blueprint
 
 [![DOI](https://zenodo.org/badge/1210947361.svg)](https://doi.org/10.5281/zenodo.20256777)
+[![Validate artefacts](https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint/actions/workflows/validate.yml/badge.svg)](https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint/actions/workflows/validate.yml)
 
 > **Start with the control plane, not the agent. The agent is the easy part.**
-
-[![Validate artefacts](https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint/actions/workflows/validate.yml/badge.svg)](https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint/actions/workflows/validate.yml)
 
 **Status: v0.2 — reference blueprint / starter kit.** This is a working collection of schemas, policies, diagrams, and examples. It is not a runnable demo stack or production-ready framework. See [What this repo is / is not](#what-this-repo-is--is-not).
 
@@ -14,6 +13,7 @@ A vendor-neutral reference architecture and ready-to-use engineering artefacts f
 <!-- 📄 **Companion article on InfoQ:** [How to Ship Governed Agentic AI in ITSM Without Joining the 40% That Get Cancelled](https://www.infoq.com/articles/...) -->
 
 ---
+
 
 ## Who this is for
 
