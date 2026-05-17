@@ -7,19 +7,19 @@
 
 If you use this blueprint in your work or research, please cite:
 
-> Prilepskiy, D. (2026). *Governed Agentic AI for ITSM — A Practical Blueprint* (v0.2). 
-> Zenodo. https://doi.org/10.5281/zenodo.20256777
+> Prilepskiy, D. (2026). *Governed Agentic AI for ITSM — A Practical Blueprint* (v0.2.0). Zenodo. https://doi.org/10.5281/zenodo.20256777
 
 BibTeX:
+
 ```bibtex
 @software{prilepskiy_2026_governed_agentic_itsm,
-  author       = {Prilepskiy, Denis},
-  title        = {Governed Agentic AI for ITSM: A Practical Blueprint},
-  year         = {2026},
-  publisher    = {Zenodo},
-  version      = {v0.2},
-  doi          = {10.5281/zenodo.20256777},
-  url          = {https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint}
+  author    = {Prilepskiy, Denis},
+  title     = {Governed Agentic AI for ITSM — A Practical Blueprint},
+  year      = {2026},
+  publisher = {Zenodo},
+  version   = {v0.2.0},
+  doi       = {10.5281/zenodo.20256777},
+  url       = {https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint}
 }
 
 > **Start with the control plane, not the agent.  
