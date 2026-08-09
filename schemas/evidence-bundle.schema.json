@@ -14,7 +14,10 @@
       "description": "Linked ITSM incident record"
     },
     "change_id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Linked change record, if a change was raised"
     },
     "traceparent": {
@@ -26,64 +29,183 @@
       "format": "date-time"
     },
     "completed_at": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "date-time"
     },
     "pre_execution": {
       "type": "object",
-      "description": "Evidence assembled BEFORE any tool execution",
+      "description": "Evidence assembled and persisted BEFORE any tool execution. This is the admission gate, not a log entry: if these fields cannot be written, the action does not run.",
       "properties": {
+        "workflow_version": {
+          "type": "string",
+          "description": "Version of the workflow declaration that admitted this action"
+        },
+        "plan_hash": {
+          "type": "string",
+          "description": "Stable hash of the proposed action set. Approval, replay fixtures, and post-execution results all reference this value."
+        },
+        "tool_contract_versions": {
+          "type": "object",
+          "description": "Map of tool name to the contract version used for this execution",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "minProperties": 1
+        },
+        "context_freshness": {
+          "type": "object",
+          "description": "Provenance of the context the plan was built on, and its age at the moment of admission",
+          "properties": {
+            "evaluated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "cmdb_as_of": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "metrics_as_of": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "cmdb_age_seconds": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "metrics_age_seconds": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "evaluated_at",
+            "cmdb_as_of",
+            "cmdb_age_seconds"
+          ]
+        },
         "signal_context": {
           "type": "object",
           "description": "Original alert/event data that triggered the pipeline",
           "properties": {
-            "source": { "type": "string" },
-            "alert_id": { "type": "string" },
-            "severity": { "type": "string" },
-            "timestamp": { "type": "string", "format": "date-time" },
-            "raw_payload_ref": { "type": "string", "description": "URI to raw alert payload" }
+            "source": {
+              "type": "string"
+            },
+            "alert_id": {
+              "type": "string"
+            },
+            "severity": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "raw_payload_ref": {
+              "type": "string",
+              "description": "URI to raw alert payload"
+            }
           },
-          "required": ["source", "alert_id", "timestamp"]
+          "required": [
+            "source",
+            "alert_id",
+            "timestamp"
+          ]
         },
         "service_context": {
           "type": "object",
           "description": "Service and CI information from CMDB/service map",
           "properties": {
-            "service": { "type": "string" },
-            "service_owner": { "type": "string" },
-            "tier": { "type": "string" },
-            "dependencies": { "type": "array", "items": { "type": "string" } },
-            "environment": { "type": "string" }
+            "service": {
+              "type": "string"
+            },
+            "service_owner": {
+              "type": "string"
+            },
+            "tier": {
+              "type": "string"
+            },
+            "dependencies": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "environment": {
+              "type": "string"
+            }
           },
-          "required": ["service"]
+          "required": [
+            "service"
+          ]
         },
         "diagnostics_summary": {
           "type": "object",
           "description": "Diagnostics agent output: hypotheses and supporting evidence",
           "properties": {
-            "probable_cause": { "type": "string" },
-            "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
-            "supporting_evidence": { "type": "array", "items": { "type": "string" } },
-            "telemetry_refs": { "type": "array", "items": { "type": "string" } }
+            "probable_cause": {
+              "type": "string"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "supporting_evidence": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "telemetry_refs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           },
-          "required": ["probable_cause", "confidence"]
+          "required": [
+            "probable_cause",
+            "confidence"
+          ]
         },
         "remediation_plan": {
           "type": "object",
           "description": "The proposed remediation plan as generated by the planner agent",
           "properties": {
-            "steps": { "type": "array", "items": { "type": "string" } },
-            "tools_required": { "type": "array", "items": { "type": "string" } },
-            "estimated_duration_seconds": { "type": "integer" },
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "tools_required": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "estimated_duration_seconds": {
+              "type": "integer"
+            },
             "blast_radius": {
               "type": "object",
               "properties": {
-                "services_affected": { "type": "integer" },
-                "estimated_users_impacted": { "type": "integer" }
+                "services_affected": {
+                  "type": "integer"
+                },
+                "estimated_users_impacted": {
+                  "type": "integer"
+                }
               }
             }
           },
-          "required": ["steps", "tools_required"]
+          "required": [
+            "steps",
+            "tools_required"
+          ]
         },
         "policy_decision": {
           "$ref": "policy-decision.schema.json"
@@ -92,58 +214,140 @@
           "type": "object",
           "description": "Pre-defined rollback steps if execution fails validation",
           "properties": {
-            "steps": { "type": "array", "items": { "type": "string" } },
-            "rollback_tools": { "type": "array", "items": { "type": "string" } },
-            "estimated_duration_seconds": { "type": "integer" }
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "rollback_tools": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "estimated_duration_seconds": {
+              "type": "integer"
+            }
           },
-          "required": ["steps"]
+          "required": [
+            "steps"
+          ]
         }
       },
-      "required": ["signal_context", "service_context", "diagnostics_summary", "remediation_plan", "policy_decision", "rollback_plan"]
+      "required": [
+        "workflow_version",
+        "plan_hash",
+        "tool_contract_versions",
+        "context_freshness",
+        "signal_context",
+        "service_context",
+        "diagnostics_summary",
+        "remediation_plan",
+        "policy_decision",
+        "rollback_plan"
+      ]
     },
     "post_execution": {
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "description": "Evidence collected AFTER tool execution. Null if execution was denied or not yet completed.",
       "properties": {
         "execution_log": {
           "type": "object",
           "properties": {
-            "execution_id": { "type": "string" },
+            "execution_id": {
+              "type": "string"
+            },
             "tool_calls": {
               "type": "array",
               "items": {
                 "type": "object",
                 "properties": {
-                  "tool": { "type": "string" },
-                  "input": { "type": "object" },
-                  "output": { "type": "object" },
-                  "exit_status": { "type": "string", "enum": ["PLANNED", "SUCCESS", "FAILED", "ROLLED_BACK"] },
-                  "started_at": { "type": "string", "format": "date-time" },
-                  "ended_at": { "type": "string", "format": "date-time" }
+                  "tool": {
+                    "type": "string"
+                  },
+                  "input": {
+                    "type": "object"
+                  },
+                  "output": {
+                    "type": "object"
+                  },
+                  "exit_status": {
+                    "type": "string",
+                    "enum": [
+                      "PLANNED",
+                      "SUCCESS",
+                      "FAILED",
+                      "ROLLED_BACK"
+                    ]
+                  },
+                  "started_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "ended_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
                 },
-                "required": ["tool", "exit_status"]
+                "required": [
+                  "tool",
+                  "exit_status"
+                ]
               }
             },
-            "raw_logs_ref": { "type": "string" }
+            "raw_logs_ref": {
+              "type": "string"
+            }
           },
-          "required": ["execution_id", "tool_calls"]
+          "required": [
+            "execution_id",
+            "tool_calls"
+          ]
         },
         "validation_results": {
           "$ref": "validation-result.schema.json"
         },
         "rollback_results": {
-          "type": ["object", "null"],
+          "type": [
+            "object",
+            "null"
+          ],
           "description": "Present only if rollback was triggered",
           "properties": {
-            "triggered": { "type": "boolean" },
-            "reason": { "type": "string" },
-            "rollback_execution_id": { "type": "string" },
-            "rollback_status": { "type": "string", "enum": ["SUCCESS", "FAILED", "PARTIAL"] }
+            "triggered": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "rollback_execution_id": {
+              "type": "string"
+            },
+            "rollback_status": {
+              "type": "string",
+              "enum": [
+                "SUCCESS",
+                "FAILED",
+                "PARTIAL"
+              ]
+            }
           }
         }
       },
-      "required": ["execution_log", "validation_results"]
+      "required": [
+        "execution_log",
+        "validation_results"
+      ]
     }
   },
-  "required": ["bundle_id", "incident_id", "created_at", "pre_execution"]
+  "required": [
+    "bundle_id",
+    "incident_id",
+    "created_at",
+    "pre_execution"
+  ]
 }

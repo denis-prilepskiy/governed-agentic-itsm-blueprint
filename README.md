@@ -7,7 +7,7 @@
 
 If you use this blueprint in your work or research, please cite:
 
-> Prilepskiy, D. (2026). *Governed Agentic AI for ITSM — A Practical Blueprint* (v0.2.0). Zenodo. https://doi.org/10.5281/zenodo.20256777
+> Prilepskiy, D. (2026). *Governed Agentic AI for ITSM — A Practical Blueprint* (v0.3.0). Zenodo. https://doi.org/10.5281/zenodo.20256777
 
 BibTeX:
 
@@ -17,7 +17,7 @@ BibTeX:
   title     = {Governed Agentic AI for ITSM — A Practical Blueprint},
   year      = {2026},
   publisher = {Zenodo},
-  version   = {v0.2.0},
+  version   = {v0.3.0},
   doi       = {10.5281/zenodo.20256777},
   url       = {https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint}
 }
@@ -26,7 +26,7 @@ BibTeX:
 > **Start with the control plane, not the agent.  
 > The agent is the easy part.**
 
-**Status: v0.2 — reference blueprint / starter kit.** This is a working collection of schemas, policies, diagrams, and examples. It is not a runnable demo stack or production-ready framework. See [What this repo is / is not](#what-this-repo-is--is-not).
+**Status: v0.3 — reference blueprint / starter kit.** This is a working collection of schemas, policies, diagrams, and examples. It is not a runnable demo stack or production-ready framework. See [What this repo is / is not](#what-this-repo-is--is-not).
 
 A vendor-neutral reference architecture and ready-to-use engineering artefacts for shipping **governed agentic AI** in IT Service Management — without joining the [40% of agentic AI projects Gartner predicts will be cancelled](https://www.gartner.com/en/newsroom/press-releases/2025-06-25-gartner-predicts-over-40-percent-of-agentic-ai-projects-will-be-canceled-by-end-of-2027) by 2027.
 
@@ -61,12 +61,12 @@ If you're looking for a vendor-specific implementation guide (ServiceNow, JSM, B
 | Tool contracts (8) | [`schemas/tool-*.json`](schemas/) | Typed schemas with safety metadata for restart, certificate renewal, drain, rollback, validation, notification, change record |
 | Governance schemas (3) | [`schemas/*-schema.json`](schemas/) | Evidence bundle, policy decision, validation result |
 | Tool contract template | [`schemas/tool-schema-template.json`](schemas/tool-schema-template.json) | Starting point for your own tool contracts |
-| OPA/Rego policies (8) | [`policies/`](policies/) | Main guardrails + 7 focused modules: prohibited tools, risk, blast radius, dry-run, change window, environment, budgets |
+| OPA/Rego policies (9) | [`policies/`](policies/) | Main guardrails + 8 focused modules: prohibited tools, risk, blast radius, dry-run, change window, environment, budgets, context freshness |
 | Change risk prompt | [`examples/change-risk-prompt.md`](examples/change-risk-prompt.md) | Structured prompt template for LLM-driven change risk assessment |
-| Example evidence bundle | [`examples/evidence/`](examples/evidence/) | Complete evidence package for a cert-renewal auto-remediation |
-| Test incidents (3) | [`examples/test-incidents/`](examples/test-incidents/) | Low, medium, high-risk scenarios for policy testing |
+| Example evidence bundles (2) | [`examples/evidence/`](examples/evidence/) | Complete evidence packages for the auto-approve path (cert renewal) and the approval path (plan-hash-bound sign-off) |
+| Test incidents (5) | [`examples/test-incidents/`](examples/test-incidents/) | Low, medium, high-risk, enriched-execution, and stale-context scenarios for policy testing |
 | Maturity model | [`MATURITY.md`](MATURITY.md) | L0–L4 progression from manual ITSM to governed autonomy, with repo artefact mapping |
-| CI validation | [`.github/workflows/validate.yml`](.github/workflows/validate.yml) | JSON/YAML/Rego syntax, workflow schema, evidence structure, and semantic decision assertions |
+| CI validation | [`.github/workflows/validate.yml`](.github/workflows/validate.yml) | JSON/YAML/Rego syntax, workflow schema, evidence structure, runtime-invariant assertions (plan-hash binding, evidence-before-execution, freshness consistency), and semantic decision assertions |
 
 ## Architecture overview
 
@@ -107,6 +107,7 @@ Use [`schemas/tool-restart-service.json`](schemas/tool-restart-service.json) as 
 - Define typed `input_schema` and `output_schema`
 - Add `safety` metadata: `idempotent`, `supports_dry_run`, `max_calls_per_incident`, `rollback_tool`
 - Set `dry_run: true` as the default
+- Record the contract `version` you executed against in `pre_execution.tool_contract_versions`
 
 The repo includes 8 tool contracts covering the most common ITSM operations. Use [`schemas/tool-schema-template.json`](schemas/tool-schema-template.json) to add your own.
 
@@ -154,7 +155,7 @@ Propagate `traceparent` through every tool call (the tool contracts include a `t
 
 ## Policy pack
 
-The `policies/` directory contains a main guardrails policy and 7 focused modules:
+The `policies/` directory contains a main guardrails policy and 8 focused modules:
 
 | Module | File | What it enforces |
 |--------|------|-----------------|
@@ -166,6 +167,45 @@ The `policies/` directory contains a main guardrails policy and 7 focused module
 | Change window | `enforce_change_window.rego` | Block/escalate outside allowed windows |
 | Environment exclusions | `enforce_environment_exclusions.rego` | Hard-block on excluded environments |
 | Tool call budget | `enforce_tool_call_budget.rego` | Cap tool calls, actions, and runtime per incident |
+| Context freshness | `enforce_context_freshness.rego` | Deny plans built on CMDB or telemetry older than the declared threshold, and route the incident to the named human owner |
+
+### Decision vocabulary
+
+The policy pack emits three verdicts. They map onto the vocabulary used in the accompanying article and architecture diagrams as follows:
+
+| `guardrails.rego` output | Article and diagrams | Meaning |
+|--------------------------|----------------------|---------|
+| `deny` | deny | Plan must not proceed; no side effects; incident goes to the fallback path |
+| `needs-human-approval` | require approval | Plan may proceed after sign-off bound to its plan hash |
+| `auto-approve` | admit with obligations | Plan may proceed automatically, under the `constraints` returned with the decision |
+
+Every admitting verdict carries obligations in `constraints`: call limits, dry-run and validation requirements, the evidence fields that must be persisted first, whether approval binds to the plan hash, and the fallback path on timeout.
+
+### Context freshness
+
+Freshness is enforced as an admission criterion, not surfaced as a warning. Thresholds live in the workflow declaration:
+
+```yaml
+guardrails:
+  context_freshness:
+    cmdb_max_age_seconds: 300
+    metrics_max_age_seconds: 60
+    on_stale_context: "deny_and_escalate"
+```
+
+Ages are computed against `context.evaluated_at` — the moment of policy admission — rather than wall-clock time, so test fixtures remain reproducible indefinitely. Incidents that declare no context timestamps produce no violation, so the module is backwards compatible.
+
+`examples/test-incidents/stale-context-restart.json` exercises this: every other signal is benign — low risk score, single declared service, allowed category, inside the change window — and only the freshness gate denies it.
+
+```bash
+# Test: stale context (should deny, with the freshness gate named in the reasons)
+opa eval \
+  --data policies/ \
+  --input examples/test-incidents/stale-context-restart.json \
+  "data.itsm.guardrails.decision"
+```
+
+> Freshness enforcement requires the full policy pack (`--data policies/`). It is not part of the standalone fallback logic in `guardrails.rego`.
 
 ## Governance mapping
 
@@ -218,16 +258,20 @@ governed-agentic-itsm-blueprint/
 │   ├── enforce_dry_run.rego
 │   ├── enforce_change_window.rego
 │   ├── enforce_environment_exclusions.rego
-│   └── enforce_tool_call_budget.rego
+│   ├── enforce_tool_call_budget.rego
+│   └── enforce_context_freshness.rego
 └── examples/
     ├── workflow.yaml
     ├── change-risk-prompt.md
     ├── evidence/
-    │   └── example-evidence-bundle.json
+    │   ├── example-evidence-bundle.json
+    │   └── example-evidence-bundle-approval.json
     └── test-incidents/
         ├── low-risk-cert-expiry.json
+        ├── low-risk-cert-expiry.execution.json
         ├── medium-risk-multi-service.json
-        └── high-risk-deploy.json
+        ├── high-risk-deploy.json
+        └── stale-context-restart.json
 ```
 
 ## Contributing

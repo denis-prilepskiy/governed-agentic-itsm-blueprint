@@ -9,12 +9,22 @@
   "risk_score": 0.91,
   "blast_radius": {
     "services_affected": 5,
-    "environments": ["production"],
+    "environments": [
+      "production"
+    ],
     "estimated_users_impacted": 85000
   },
   "plan": {
-    "steps": ["rollback_deployment", "validate_service_health", "notify_stakeholders"],
-    "tools": ["rollback_deployment", "validate_service_health", "notify_stakeholders"],
+    "steps": [
+      "rollback_deployment",
+      "validate_service_health",
+      "notify_stakeholders"
+    ],
+    "tools": [
+      "rollback_deployment",
+      "validate_service_health",
+      "notify_stakeholders"
+    ],
     "estimated_duration_seconds": 300
   },
   "context": {
@@ -28,6 +38,10 @@
       "billing-api",
       "analytics-pipeline",
       "notification-service"
-    ]
-  }
+    ],
+    "evaluated_at": "2025-04-16T23:41:00Z",
+    "cmdb_as_of": "2025-04-16T23:38:10Z",
+    "metrics_as_of": "2025-04-16T23:40:35Z"
+  },
+  "plan_hash": "sha256:cba2d06d0c0e437f89ee6fba5cf0544a"
 }

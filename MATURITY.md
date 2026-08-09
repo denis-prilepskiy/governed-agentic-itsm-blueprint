@@ -2,6 +2,21 @@
 
 This model ties **autonomy** to **required controls** — you cannot safely advance a level without the governance infrastructure to support it.
 
+> **Maturity is organisational; readiness is per incident class.** This model
+> describes how far an organisation has built out its control plane. It does not
+> decide whether a *particular* incident category may be automated. That is a
+> separate, binary test — the readiness gate — and an L4 organisation still
+> fails it for incident classes with no rollback path or no fresh service data:
+>
+> 1. the resolution path is stable and repeatable;
+> 2. affected services, ownership, and dependencies are known within declared freshness limits;
+> 3. every mutating action is exposed through a versioned tool contract;
+> 4. service-level success and rollback can be verified automatically;
+> 5. the fallback path has a named human owner and an SLA.
+>
+> If any gate fails, start with decision support or supervised execution for that
+> class, regardless of the maturity level you have reached elsewhere.
+
 ## Levels
 
 | Level | Capability | Autonomy | Controls required | Typical KPI |
@@ -23,12 +38,13 @@ This table shows which artefacts in this repo become relevant at each maturity l
 | Tool contract template | `schemas/tool-schema-template.json` | L2+ (formalise tool interfaces before execution) |
 | Tool contracts (8) | `schemas/tool-*.json` | L2–L3 (typed, testable contracts for each action) |
 | Policy engine (main) | `policies/guardrails.rego` | L2–L3 (risk-gate every action; require approval) |
-| Policy modules (7) | `policies/enforce_*.rego`, `policies/require_*.rego` | L3+ (extend policy for change windows, budgets, dry-run) |
+| Policy modules (8) | `policies/enforce_*.rego`, `policies/require_*.rego` | L3+ (extend policy for change windows, budgets, dry-run, context freshness) |
+| Context-freshness gate | `policies/enforce_context_freshness.rego` | L3+ (readiness gate 2: refuse to act on stale service data) |
 | Evidence bundle schema | `schemas/evidence-bundle.schema.json` | L3 (pre-execution evidence required before acting) |
 | Validation contract | `schemas/tool-validate-health.json` | L3 (validate service health before closing incident) |
 | Policy decision schema | `schemas/policy-decision.schema.json` | L3 (structured, auditable policy output) |
 | Test incidents | `examples/test-incidents/` | L3 (offline calibration before production) |
-| Example evidence bundle | `examples/evidence/` | L3 (reference for what a complete audit record looks like) |
+| Example evidence bundles | `examples/evidence/` | L3 (reference records for the auto-approve and plan-hash-bound approval paths) |
 | CI validation | `.github/workflows/validate.yml` | L3–L4 (automated correctness checks, semantic assertions) |
 | Maturity model | `MATURITY.md` | All levels |
 | Governance mapping | README governance section | L3–L4 (ISO 42001, NIST, EU AI Act) |
