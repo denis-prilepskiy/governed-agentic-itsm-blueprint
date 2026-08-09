@@ -7,7 +7,7 @@
 
 workflow:
   name: incident-auto-remediation-v1
-  version: "1.0.0"
+  version: "1.1.0"
   objective: "Reduce MTTR for recurrent low-risk incidents without increasing change failure rate"
 
   scope:
@@ -33,6 +33,22 @@ workflow:
 
   guardrails:
     must_use_dry_run_first: true
+
+    # Freshness is an admission criterion, not a warning. Above these
+    # thresholds the plan is denied and the incident goes to the named
+    # human owner rather than being executed against stale topology.
+    # Enforced by policies/enforce_context_freshness.rego.
+    context_freshness:
+      cmdb_max_age_seconds: 300
+      metrics_max_age_seconds: 60
+      on_stale_context: "deny_and_escalate"
+
+    # Approval is bound to a specific plan hash for a bounded window.
+    # Any re-planning invalidates the approval and requires a new one.
+    approval_binding:
+      bind_to_plan_hash: true
+      approval_valid_for_seconds: 900
+
     require_human_approval_if:
       - "risk_score >= 0.60"
       - "blast_radius.services_affected > 1"
@@ -45,6 +61,10 @@ workflow:
 
   evidence_bundle:
     must_attach_before_execute:
+      - "workflow_version"
+      - "plan_hash"
+      - "tool_contract_versions"
+      - "context_freshness"
       - "signal_context"
       - "service_context"
       - "diagnostics_summary"
@@ -58,11 +78,14 @@ workflow:
 
   observability:
     trace_propagation: "W3C traceparent"
+    semantic_conventions: "opentelemetry-genai"
     metrics_prefix: "itsm.agent."
     required_metrics:
       - "triage_duration_seconds"
       - "diagnostics_duration_seconds"
       - "policy_decision"
+      - "context_freshness_seconds"
+      - "stale_context_denials"
       - "tool_execution_duration_seconds"
       - "validation_result"
       - "rollback_count"

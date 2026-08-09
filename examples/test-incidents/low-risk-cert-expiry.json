@@ -9,18 +9,30 @@
   "risk_score": 0.25,
   "blast_radius": {
     "services_affected": 1,
-    "environments": ["production"],
+    "environments": [
+      "production"
+    ],
     "estimated_users_impacted": 0
   },
   "plan": {
-    "steps": ["renew_certificate", "validate_service_health"],
-    "tools": ["renew_certificate", "validate_service_health"],
+    "steps": [
+      "renew_certificate",
+      "validate_service_health"
+    ],
+    "tools": [
+      "renew_certificate",
+      "validate_service_health"
+    ],
     "estimated_duration_seconds": 120
   },
   "context": {
     "similar_incidents_last_90d": 12,
     "last_change_failure_for_service": null,
     "service_health_current": "healthy",
-    "change_window": "standard-hours"
-  }
+    "change_window": "standard-hours",
+    "evaluated_at": "2025-04-15T02:03:15Z",
+    "cmdb_as_of": "2025-04-15T02:01:40Z",
+    "metrics_as_of": "2025-04-15T02:03:05Z"
+  },
+  "plan_hash": "sha256:c94add95d709a70b0e38bb9c4d2df60c"
 }

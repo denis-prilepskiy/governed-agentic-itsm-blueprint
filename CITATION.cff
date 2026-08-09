@@ -1,10 +1,10 @@
 cff-version: 1.2.0
 title: "Governed Agentic AI for ITSM — A Practical Blueprint"
-version: 0.2.0
+version: 0.3.0
 license: "Apache-2.0"
 type: software
 message: "If you use this blueprint, please cite it as below."
-abstract: "A vendor-neutral reference architecture and engineering artefact collection for governing agentic AI in IT Service Management, including tool contracts, OPA/Rego policies, evidence schemas, governance mappings, and an autonomy maturity model."
+abstract: "A vendor-neutral reference architecture and engineering artefact collection for governing agentic AI in IT Service Management, including tool contracts, OPA/Rego policies, evidence schemas with plan-hash binding and context-freshness admission, governance mappings, and an autonomy maturity model."
 authors:
   - given-names: Denis
     family-names: Prilepskiy

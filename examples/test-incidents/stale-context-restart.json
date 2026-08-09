@@ -1,13 +1,13 @@
 {
-  "_comment": "Enriched fixture \u2014 includes workflow declaration and plan.tool_calls. Used to test enforce_dry_run, enforce_change_window, enforce_environment_exclusions, enforce_tool_call_budget and enforce_context_freshness. Run with: opa eval --data policies/ --input examples/test-incidents/low-risk-cert-expiry.execution.json \"data.itsm.guardrails.decision\"",
+  "_comment": "Reproduces the failure class behind the opening case of the article: a correct plan built on a dependency map that is 36 hours old. Every other signal looks benign \u2014 low risk score, single declared service, allowed category, inside the change window. Only the freshness gate catches it. Expected decision: deny. Run with: opa eval --data policies/ --input examples/test-incidents/stale-context-restart.json \"data.itsm.guardrails.decision\"",
   "incident": {
-    "id": "INC-2025-04821",
-    "category": "cert-expiry",
+    "id": "INC-2025-04901",
+    "category": "svc-restart",
     "service": "checkout-api",
     "priority": "P3",
-    "summary": "TLS certificate for checkout-api.prod expires in 48 hours"
+    "summary": "checkout-api instance degraded, documented restart runbook applies"
   },
-  "risk_score": 0.25,
+  "risk_score": 0.22,
   "blast_radius": {
     "services_affected": 1,
     "environments": [
@@ -17,33 +17,31 @@
   },
   "plan": {
     "steps": [
-      "renew_certificate",
+      "restart_service",
       "validate_service_health"
     ],
     "tools": [
-      "renew_certificate",
+      "restart_service",
       "validate_service_health"
     ],
     "estimated_duration_seconds": 90,
     "tool_calls": [
       {
-        "tool_name": "renew_certificate",
+        "tool_name": "restart_service",
         "dry_run": true,
         "input": {
           "service": "checkout-api",
-          "endpoint": "checkout-api.prod.example.com",
-          "certificate_authority": "internal-ca",
-          "reason": "INC-2025-04821"
+          "instance_id": "checkout-api-7f4b",
+          "reason": "INC-2025-04901"
         }
       },
       {
-        "tool_name": "renew_certificate",
+        "tool_name": "restart_service",
         "dry_run": false,
         "input": {
           "service": "checkout-api",
-          "endpoint": "checkout-api.prod.example.com",
-          "certificate_authority": "internal-ca",
-          "reason": "INC-2025-04821"
+          "instance_id": "checkout-api-7f4b",
+          "reason": "INC-2025-04901"
         }
       },
       {
@@ -52,28 +50,28 @@
         "input": {
           "service": "checkout-api",
           "checks": [
-            "tls_handshake_success",
-            "certificate_expiry_ok",
-            "latency_p95_ok"
+            "latency_p95_ok",
+            "error_rate_ok"
           ]
         }
       }
     ]
   },
   "context": {
-    "similar_incidents_last_90d": 12,
+    "similar_incidents_last_90d": 9,
     "last_change_failure_for_service": null,
-    "service_health_current": "healthy",
-    "change_window": "standard-hours",
+    "service_health_current": "degraded",
+    "change_window": "low-traffic",
     "environments": [
       "production"
     ],
-    "evaluated_at": "2025-04-15T02:03:15Z",
-    "cmdb_as_of": "2025-04-15T02:01:40Z",
-    "metrics_as_of": "2025-04-15T02:03:05Z"
+    "evaluated_at": "2025-04-18T02:14:00Z",
+    "cmdb_as_of": "2025-04-16T14:14:00Z",
+    "metrics_as_of": "2025-04-18T02:13:40Z"
   },
   "workflow": {
     "name": "incident-auto-remediation-v1",
+    "version": "1.1.0",
     "scope": {
       "services": [
         "checkout-api",
@@ -108,8 +106,7 @@
         "bind_to_plan_hash": true,
         "approval_valid_for_seconds": 900
       }
-    },
-    "version": "1.1.0"
+    }
   },
-  "plan_hash": "sha256:99c8ec958bd56adde1d3b0a7d9efa9d4"
+  "plan_hash": "sha256:6d3b2db5aa8a0bf86498f4d3039a32f5"
 }

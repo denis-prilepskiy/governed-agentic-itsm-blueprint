@@ -1,0 +1,215 @@
+{
+  "_comment": "Second reference bundle: the approval path. Demonstrates the third runtime invariant — the operator approval carries the plan_hash it authorises and an explicit expiry. CI asserts that policy_decision.approval.plan_hash equals pre_execution.plan_hash. Any re-planning changes the hash and invalidates this approval.",
+  "bundle_id": "eb-2025-04833-001",
+  "incident_id": "INC-2025-04833",
+  "change_id": "CHG-2025-08902",
+  "traceparent": "00-9c1e2a7b45f8419db0a3ce929d0e0e47-11a3f0672bb914c8-01",
+  "created_at": "2025-04-15T09:12:00Z",
+  "completed_at": "2025-04-15T09:19:34Z",
+  "pre_execution": {
+    "workflow_version": "1.1.0",
+    "plan_hash": "sha256:28c34b5fda2d13bbd1e3b8016bbbbf5a",
+    "tool_contract_versions": {
+      "drain_connections": "1.0.0",
+      "restart_service": "1.2.0",
+      "validate_service_health": "1.0.0"
+    },
+    "context_freshness": {
+      "evaluated_at": "2025-04-15T09:12:00Z",
+      "cmdb_as_of": "2025-04-15T09:08:30Z",
+      "metrics_as_of": "2025-04-15T09:11:20Z",
+      "cmdb_age_seconds": 210,
+      "metrics_age_seconds": 40
+    },
+    "signal_context": {
+      "source": "prometheus-alertmanager",
+      "alert_id": "memory-leak-payments-gateway",
+      "severity": "warning",
+      "timestamp": "2025-04-15T09:11:45Z",
+      "raw_payload_ref": "s3://evidence-store/alerts/2025-04-15/memory-leak-payments-gateway.json"
+    },
+    "service_context": {
+      "service": "payments-gateway",
+      "service_owner": "payments-team",
+      "tier": "tier-1",
+      "dependencies": [
+        "checkout-api",
+        "refunds-service",
+        "billing-api"
+      ],
+      "environment": "production"
+    },
+    "diagnostics_summary": {
+      "probable_cause": "Resident set size growing linearly since the 09-Apr deployment; p95 latency degrading in step with heap growth",
+      "confidence": 0.84,
+      "supporting_evidence": [
+        "container_memory_working_set_bytes up 42% over 72h",
+        "no corresponding increase in request volume",
+        "same signature as INC-2025-03011, resolved by rolling restart"
+      ],
+      "telemetry_refs": [
+        "grafana://dashboards/payments-gateway/memory",
+        "s3://evidence-store/traces/2025-04-15/payments-gateway-p95.json"
+      ]
+    },
+    "remediation_plan": {
+      "steps": [
+        "Drain in-flight connections from payments-gateway-2c19",
+        "Restart payments-gateway-2c19",
+        "Validate p95 latency and error rate against SLO for 120 seconds"
+      ],
+      "tools_required": [
+        "drain_connections",
+        "restart_service",
+        "validate_service_health"
+      ],
+      "estimated_duration_seconds": 180,
+      "blast_radius": {
+        "services_affected": 3,
+        "estimated_users_impacted": 15000
+      }
+    },
+    "policy_decision": {
+      "decision_id": "pd-2025-04833-001",
+      "evaluated_at": "2025-04-15T09:12:02Z",
+      "policy_version": "v0.3.0",
+      "allow": true,
+      "require_approval": true,
+      "decision": "needs-human-approval",
+      "reasons": [
+        "risk_score >= 0.60",
+        "multi-service blast radius"
+      ],
+      "risk_score": 0.72,
+      "constraints": {
+        "max_tool_calls": 3,
+        "must_use_dry_run_first": true,
+        "must_validate_after": true,
+        "timeout_seconds": 180,
+        "required_evidence_fields": [
+          "workflow_version",
+          "plan_hash",
+          "tool_contract_versions",
+          "context_freshness",
+          "signal_context",
+          "service_context",
+          "diagnostics_summary",
+          "remediation_plan",
+          "policy_decision",
+          "rollback_plan"
+        ],
+        "approval_binds_to_plan_hash": true,
+        "fallback_on_timeout": "escalate_to_named_owner"
+      },
+      "approval": {
+        "approved_by": "j.okafor@example.com",
+        "approved_at": "2025-04-15T09:13:41Z",
+        "approval_method": "slack",
+        "plan_hash": "sha256:28c34b5fda2d13bbd1e3b8016bbbbf5a",
+        "valid_until": "2025-04-15T09:28:41Z",
+        "notes": "Approved for the drain-then-restart plan as written. Do not re-plan without re-approval."
+      }
+    },
+    "rollback_plan": {
+      "steps": [
+        "Restore previous instance from the pre-restart snapshot",
+        "Re-admit drained connections",
+        "Escalate to payments-team on-call if p95 does not recover within 120 seconds"
+      ],
+      "rollback_tools": [
+        "restart_service_rollback"
+      ],
+      "estimated_duration_seconds": 120
+    }
+  },
+  "post_execution": {
+    "execution_log": {
+      "execution_id": "exec-2025-04833-001",
+      "tool_calls": [
+        {
+          "tool": "drain_connections",
+          "input": {
+            "service": "payments-gateway",
+            "instance_id": "payments-gateway-2c19",
+            "dry_run": true
+          },
+          "output": {
+            "exit_status": "PLANNED"
+          },
+          "exit_status": "PLANNED",
+          "started_at": "2025-04-15T09:13:50Z",
+          "ended_at": "2025-04-15T09:13:52Z"
+        },
+        {
+          "tool": "drain_connections",
+          "input": {
+            "service": "payments-gateway",
+            "instance_id": "payments-gateway-2c19",
+            "dry_run": false
+          },
+          "output": {
+            "exit_status": "SUCCESS",
+            "connections_drained": 214
+          },
+          "exit_status": "SUCCESS",
+          "started_at": "2025-04-15T09:13:55Z",
+          "ended_at": "2025-04-15T09:15:10Z"
+        },
+        {
+          "tool": "restart_service",
+          "input": {
+            "service": "payments-gateway",
+            "instance_id": "payments-gateway-2c19",
+            "reason": "INC-2025-04833",
+            "dry_run": false
+          },
+          "output": {
+            "exit_status": "SUCCESS",
+            "execution_id": "rs-2025-04833-001"
+          },
+          "exit_status": "SUCCESS",
+          "started_at": "2025-04-15T09:15:12Z",
+          "ended_at": "2025-04-15T09:16:58Z"
+        }
+      ],
+      "raw_logs_ref": "s3://evidence-store/executions/2025-04-15/exec-2025-04833-001.log"
+    },
+    "validation_results": {
+      "validation_id": "val-2025-04833-001",
+      "validated_at": "2025-04-15T09:19:30Z",
+      "service": "payments-gateway",
+      "status": "PASS",
+      "time_window_seconds": 120,
+      "check_results": [
+        {
+          "check": "latency_p95_ok",
+          "status": "PASS",
+          "detail": "p95 back inside SLO band",
+          "metric_value": 412,
+          "threshold": 500
+        },
+        {
+          "check": "error_rate_ok",
+          "status": "PASS",
+          "detail": "5xx rate nominal",
+          "metric_value": 0.08,
+          "threshold": 1.0
+        },
+        {
+          "check": "memory_working_set_ok",
+          "status": "PASS",
+          "detail": "heap reset to baseline",
+          "metric_value": 1.9,
+          "threshold": 3.0
+        }
+      ],
+      "failed_checks": [],
+      "evidence_links": [
+        "grafana://dashboards/payments-gateway/memory",
+        "s3://evidence-store/validations/2025-04-15/val-2025-04833-001.json"
+      ],
+      "rollback_recommended": false
+    },
+    "rollback_results": null
+  }
+}

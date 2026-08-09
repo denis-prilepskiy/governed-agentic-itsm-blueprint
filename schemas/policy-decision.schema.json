@@ -27,12 +27,18 @@
     },
     "decision": {
       "type": "string",
-      "enum": ["auto-approve", "needs-human-approval", "deny"],
+      "enum": [
+        "auto-approve",
+        "needs-human-approval",
+        "deny"
+      ],
       "description": "Summary verdict — must match guardrails.rego output"
     },
     "reasons": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "minItems": 1,
       "description": "Human-readable reasons for the decision"
     },
@@ -46,26 +52,79 @@
       "type": "object",
       "description": "Execution constraints imposed by the policy",
       "properties": {
-        "max_tool_calls": { "type": "integer" },
-        "must_use_dry_run_first": { "type": "boolean" },
-        "must_validate_after": { "type": "boolean" },
-        "timeout_seconds": { "type": "integer" }
+        "max_tool_calls": {
+          "type": "integer"
+        },
+        "must_use_dry_run_first": {
+          "type": "boolean"
+        },
+        "must_validate_after": {
+          "type": "boolean"
+        },
+        "timeout_seconds": {
+          "type": "integer"
+        },
+        "required_evidence_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Evidence fields that must be persisted before any side-effecting tool call"
+        },
+        "approval_binds_to_plan_hash": {
+          "type": "boolean",
+          "description": "Whether an approval, if required, must reference the plan hash it authorises"
+        },
+        "fallback_on_timeout": {
+          "type": "string",
+          "description": "Path taken if the obligations cannot be met within timeout_seconds"
+        }
       }
     },
     "approval": {
-      "type": ["object", "null"],
-      "description": "Present only if require_approval was true and approval was obtained",
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Present only if require_approval was true and approval was obtained. Approval binds to a specific plan hash for a bounded window: any re-planning changes the hash and invalidates the approval.",
       "properties": {
-        "approved_by": { "type": "string" },
-        "approved_at": { "type": "string", "format": "date-time" },
+        "approved_by": {
+          "type": "string"
+        },
+        "approved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
         "approval_method": {
           "type": "string",
-          "enum": ["slack", "pagerduty", "email", "cab", "api"],
+          "enum": [
+            "slack",
+            "pagerduty",
+            "email",
+            "cab",
+            "api"
+          ],
           "description": "Channel through which approval was obtained"
         },
-        "notes": { "type": "string" }
+        "notes": {
+          "type": "string"
+        },
+        "plan_hash": {
+          "type": "string",
+          "description": "Hash of the exact remediation plan this approval authorises. Must equal pre_execution.plan_hash in the evidence bundle."
+        },
+        "valid_until": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Expiry of the approval. Execution starting after this instant requires a new approval."
+        }
       },
-      "required": ["approved_by", "approved_at"]
+      "required": [
+        "approved_by",
+        "approved_at",
+        "plan_hash",
+        "valid_until"
+      ]
     }
   },
   "required": [

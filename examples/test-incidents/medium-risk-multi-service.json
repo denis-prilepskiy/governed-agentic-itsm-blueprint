@@ -9,12 +9,22 @@
   "risk_score": 0.72,
   "blast_radius": {
     "services_affected": 3,
-    "environments": ["production"],
+    "environments": [
+      "production"
+    ],
     "estimated_users_impacted": 15000
   },
   "plan": {
-    "steps": ["drain_connections", "restart_service", "validate_service_health"],
-    "tools": ["drain_connections", "restart_service", "validate_service_health"],
+    "steps": [
+      "drain_connections",
+      "restart_service",
+      "validate_service_health"
+    ],
+    "tools": [
+      "drain_connections",
+      "restart_service",
+      "validate_service_health"
+    ],
     "estimated_duration_seconds": 180
   },
   "context": {
@@ -22,6 +32,14 @@
     "last_change_failure_for_service": "2025-03-12T14:30:00Z",
     "service_health_current": "degraded",
     "change_window": "standard-hours",
-    "dependent_services": ["checkout-api", "refunds-service", "billing-api"]
-  }
+    "dependent_services": [
+      "checkout-api",
+      "refunds-service",
+      "billing-api"
+    ],
+    "evaluated_at": "2025-04-15T09:12:00Z",
+    "cmdb_as_of": "2025-04-15T09:08:30Z",
+    "metrics_as_of": "2025-04-15T09:11:20Z"
+  },
+  "plan_hash": "sha256:28c34b5fda2d13bbd1e3b8016bbbbf5a"
 }

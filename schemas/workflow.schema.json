@@ -8,74 +8,223 @@
     "workflow": {
       "type": "object",
       "properties": {
-        "name": { "type": "string" },
-        "version": { "type": "string" },
-        "objective": { "type": "string" },
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "objective": {
+          "type": "string"
+        },
         "scope": {
           "type": "object",
           "properties": {
-            "services": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-            "allowed_categories": { "type": "array", "items": { "type": "string" } },
-            "change_windows_allowed": { "type": "array", "items": { "type": "string" } },
-            "excluded_environments": { "type": "array", "items": { "type": "string" } }
+            "services": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "allowed_categories": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "change_windows_allowed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "excluded_environments": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           },
-          "required": ["services", "allowed_categories"]
+          "required": [
+            "services",
+            "allowed_categories"
+          ]
         },
         "agents": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "name": { "type": "string" },
-              "responsibilities": { "type": "array", "items": { "type": "string" } }
+              "name": {
+                "type": "string"
+              },
+              "responsibilities": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             },
-            "required": ["name", "responsibilities"]
+            "required": [
+              "name",
+              "responsibilities"
+            ]
           }
         },
         "autonomy_budget": {
           "type": "object",
           "properties": {
-            "max_actions_per_incident": { "type": "integer", "minimum": 1 },
-            "max_tool_calls_per_incident": { "type": "integer", "minimum": 1 },
-            "max_runtime_seconds": { "type": "integer", "minimum": 1 }
+            "max_actions_per_incident": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_tool_calls_per_incident": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_runtime_seconds": {
+              "type": "integer",
+              "minimum": 1
+            }
           },
-          "required": ["max_actions_per_incident", "max_tool_calls_per_incident", "max_runtime_seconds"]
+          "required": [
+            "max_actions_per_incident",
+            "max_tool_calls_per_incident",
+            "max_runtime_seconds"
+          ]
         },
         "guardrails": {
           "type": "object",
           "properties": {
-            "must_use_dry_run_first": { "type": "boolean" },
-            "require_human_approval_if": { "type": "array", "items": { "type": "string" } },
-            "never_allow": { "type": "array", "items": { "type": "string" } },
+            "must_use_dry_run_first": {
+              "type": "boolean"
+            },
+            "require_human_approval_if": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "never_allow": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
             "rate_limits": {
               "type": "object",
               "properties": {
-                "max_auto_remediations_per_hour": { "type": "integer" },
-                "max_auto_remediations_per_service_per_hour": { "type": "integer" }
+                "max_auto_remediations_per_hour": {
+                  "type": "integer"
+                },
+                "max_auto_remediations_per_service_per_hour": {
+                  "type": "integer"
+                }
               }
+            },
+            "context_freshness": {
+              "type": "object",
+              "description": "Freshness thresholds applied as an admission criterion. Enforced by policies/enforce_context_freshness.rego.",
+              "properties": {
+                "cmdb_max_age_seconds": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "metrics_max_age_seconds": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "on_stale_context": {
+                  "type": "string",
+                  "enum": [
+                    "deny_and_escalate",
+                    "require_approval"
+                  ],
+                  "description": "deny_and_escalate routes the incident to the named human owner; require_approval is a weaker posture and should be used only where the human reviewer has an independent source of truth"
+                }
+              },
+              "required": [
+                "cmdb_max_age_seconds",
+                "metrics_max_age_seconds",
+                "on_stale_context"
+              ]
+            },
+            "approval_binding": {
+              "type": "object",
+              "description": "Binds human approval to a specific plan hash for a bounded window",
+              "properties": {
+                "bind_to_plan_hash": {
+                  "type": "boolean"
+                },
+                "approval_valid_for_seconds": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "bind_to_plan_hash",
+                "approval_valid_for_seconds"
+              ]
             }
           },
-          "required": ["must_use_dry_run_first"]
+          "required": [
+            "must_use_dry_run_first"
+          ]
         },
         "evidence_bundle": {
           "type": "object",
           "properties": {
-            "must_attach_before_execute": { "type": "array", "items": { "type": "string" } },
-            "must_attach_after_execute": { "type": "array", "items": { "type": "string" } }
+            "must_attach_before_execute": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "must_attach_after_execute": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           },
-          "required": ["must_attach_before_execute", "must_attach_after_execute"]
+          "required": [
+            "must_attach_before_execute",
+            "must_attach_after_execute"
+          ]
         },
         "observability": {
           "type": "object",
           "properties": {
-            "trace_propagation": { "type": "string" },
-            "metrics_prefix": { "type": "string" },
-            "required_metrics": { "type": "array", "items": { "type": "string" } }
+            "trace_propagation": {
+              "type": "string"
+            },
+            "metrics_prefix": {
+              "type": "string"
+            },
+            "required_metrics": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "semantic_conventions": {
+              "type": "string",
+              "description": "Semantic convention set used for agent and model telemetry, e.g. opentelemetry-genai"
+            }
           }
         }
       },
-      "required": ["name", "scope", "autonomy_budget", "guardrails", "evidence_bundle"]
+      "required": [
+        "name",
+        "scope",
+        "autonomy_budget",
+        "guardrails",
+        "evidence_bundle"
+      ]
     }
   },
-  "required": ["workflow"]
+  "required": [
+    "workflow"
+  ]
 }

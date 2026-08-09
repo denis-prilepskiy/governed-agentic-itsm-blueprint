@@ -6,6 +6,19 @@
   "created_at": "2025-04-15T02:03:12Z",
   "completed_at": "2025-04-15T02:06:48Z",
   "pre_execution": {
+    "workflow_version": "1.1.0",
+    "plan_hash": "sha256:c94add95d709a70b0e38bb9c4d2df60c",
+    "tool_contract_versions": {
+      "renew_certificate": "1.1.0",
+      "validate_service_health": "1.0.0"
+    },
+    "context_freshness": {
+      "evaluated_at": "2025-04-15T02:03:15Z",
+      "cmdb_as_of": "2025-04-15T02:01:40Z",
+      "metrics_as_of": "2025-04-15T02:03:05Z",
+      "cmdb_age_seconds": 95,
+      "metrics_age_seconds": 10
+    },
     "signal_context": {
       "source": "prometheus-alertmanager",
       "alert_id": "cert-expiry-checkout-api-48h",
@@ -17,7 +30,10 @@
       "service": "checkout-api",
       "service_owner": "payments-team",
       "tier": "tier-1",
-      "dependencies": ["payments-gateway", "billing-api"],
+      "dependencies": [
+        "payments-gateway",
+        "billing-api"
+      ],
       "environment": "production"
     },
     "diagnostics_summary": {
@@ -38,7 +54,10 @@
         "Renew certificate via internal-ca",
         "Validate new certificate installed and TLS handshake succeeds"
       ],
-      "tools_required": ["renew_certificate", "validate_service_health"],
+      "tools_required": [
+        "renew_certificate",
+        "validate_service_health"
+      ],
       "estimated_duration_seconds": 90,
       "blast_radius": {
         "services_affected": 1,
@@ -52,12 +71,29 @@
       "allow": true,
       "require_approval": false,
       "decision": "auto-approve",
-      "reasons": ["all policy checks passed"],
+      "reasons": [
+        "all policy checks passed"
+      ],
       "risk_score": 0.25,
       "constraints": {
         "max_tool_calls": 5,
         "must_use_dry_run_first": true,
-        "must_validate_after": true
+        "must_validate_after": true,
+        "timeout_seconds": 180,
+        "required_evidence_fields": [
+          "workflow_version",
+          "plan_hash",
+          "tool_contract_versions",
+          "context_freshness",
+          "signal_context",
+          "service_context",
+          "diagnostics_summary",
+          "remediation_plan",
+          "policy_decision",
+          "rollback_plan"
+        ],
+        "approval_binds_to_plan_hash": true,
+        "fallback_on_timeout": "escalate_to_named_owner"
       },
       "approval": null
     },

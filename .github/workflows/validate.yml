@@ -72,7 +72,7 @@ jobs:
               sys.exit(1)
           EOF
 
-      - name: Validate evidence bundle against multi-file schema
+      - name: Validate evidence bundles against multi-file schema
         run: |
           python3 - <<'EOF'
           import json, sys
@@ -92,24 +92,186 @@ jobs:
 
           registry = Registry().with_resources(resources)
 
-          # Load main schema and instance
           with open("schemas/evidence-bundle.schema.json") as f:
               main_schema = json.load(f)
-          with open("examples/evidence/example-evidence-bundle.json") as f:
-              instance = json.load(f)
 
-          # Validate with registry for cross-file $ref resolution
-          validator = Draft202012Validator(main_schema, registry=registry)
-          errors = sorted(validator.iter_errors(instance), key=lambda e: e.path)
-
-          if errors:
-              print("FAIL: evidence bundle failed schema validation")
-              for e in errors:
-                  path = "/".join(str(p) for p in e.absolute_path) or "<root>"
-                  print(f"  {path}: {e.message}")
+          bundles = sorted(Path("examples/evidence").glob("*.json"))
+          if not bundles:
+              print("FAIL: no evidence bundles found in examples/evidence/")
               sys.exit(1)
 
-          print("OK: examples/evidence/example-evidence-bundle.json validates against evidence-bundle.schema.json (with $ref resolution)")
+          failed = 0
+          validator = Draft202012Validator(main_schema, registry=registry)
+          for bundle_path in bundles:
+              with open(bundle_path) as f:
+                  instance = json.load(f)
+              errors = sorted(validator.iter_errors(instance), key=lambda e: e.path)
+              if errors:
+                  failed += 1
+                  print(f"FAIL: {bundle_path} failed schema validation")
+                  for e in errors:
+                      path = "/".join(str(p) for p in e.absolute_path) or "<root>"
+                      print(f"  {path}: {e.message}")
+              else:
+                  print(f"OK: {bundle_path} validates (with $ref resolution)")
+
+          sys.exit(1 if failed else 0)
+          EOF
+
+      - name: Assert approval binds to plan hash
+        run: |
+          python3 - <<'EOF'
+          import json, sys
+          from datetime import datetime
+          from pathlib import Path
+
+          def parse(ts):
+              return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+
+          failed = 0
+          for bundle_path in sorted(Path("examples/evidence").glob("*.json")):
+              with open(bundle_path) as f:
+                  bundle = json.load(f)
+              pre = bundle["pre_execution"]
+              approval = (pre.get("policy_decision") or {}).get("approval")
+
+              if not approval:
+                  print(f"  SKIP: {bundle_path.name} — no approval (auto-approve path)")
+                  continue
+
+              # Invariant 3: approval binds to a concrete plan.
+              if approval.get("plan_hash") != pre.get("plan_hash"):
+                  print(f"  FAIL: {bundle_path.name} — approval.plan_hash "
+                        f"{approval.get('plan_hash')!r} does not match "
+                        f"pre_execution.plan_hash {pre.get('plan_hash')!r}")
+                  failed += 1
+                  continue
+
+              # The approval window must be non-empty and must open at approval time.
+              if parse(approval["valid_until"]) <= parse(approval["approved_at"]):
+                  print(f"  FAIL: {bundle_path.name} — valid_until is not after approved_at")
+                  failed += 1
+                  continue
+
+              # Execution must not start after the approval expires.
+              calls = ((bundle.get("post_execution") or {}).get("execution_log") or {}).get("tool_calls", [])
+              starts = [parse(c["started_at"]) for c in calls if c.get("started_at")]
+              if starts and max(starts) > parse(approval["valid_until"]):
+                  print(f"  FAIL: {bundle_path.name} — a tool call started after the approval expired")
+                  failed += 1
+                  continue
+
+              print(f"  PASS: {bundle_path.name} — approval bound to plan hash, within window")
+
+          if failed:
+              print(f"::error::{failed} approval-binding assertion(s) failed")
+              sys.exit(1)
+          print("All approval-binding assertions passed.")
+          EOF
+
+      - name: Assert evidence precedes execution
+        run: |
+          python3 - <<'EOF'
+          import json, sys
+          from datetime import datetime
+          from pathlib import Path
+
+          def parse(ts):
+              return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+
+          REQUIRED = [
+              "workflow_version", "plan_hash", "tool_contract_versions", "context_freshness",
+              "signal_context", "service_context", "diagnostics_summary",
+              "remediation_plan", "policy_decision", "rollback_plan",
+          ]
+
+          failed = 0
+          for bundle_path in sorted(Path("examples/evidence").glob("*.json")):
+              with open(bundle_path) as f:
+                  bundle = json.load(f)
+              pre = bundle["pre_execution"]
+
+              # Invariant 1: the pre-execution record is complete before any side effect.
+              missing = [k for k in REQUIRED if k not in pre]
+              if missing:
+                  print(f"  FAIL: {bundle_path.name} — missing pre-execution fields: {missing}")
+                  failed += 1
+                  continue
+
+              # Every tool contract named in the plan must declare the version used.
+              named = set(pre["remediation_plan"].get("tools_required", []))
+              versioned = set(pre["tool_contract_versions"])
+              if not named <= versioned:
+                  print(f"  FAIL: {bundle_path.name} — no contract version recorded for "
+                        f"{sorted(named - versioned)}")
+                  failed += 1
+                  continue
+
+              # The bundle must be created before the first tool call.
+              calls = ((bundle.get("post_execution") or {}).get("execution_log") or {}).get("tool_calls", [])
+              starts = [parse(c["started_at"]) for c in calls if c.get("started_at")]
+              if starts and parse(bundle["created_at"]) > min(starts):
+                  print(f"  FAIL: {bundle_path.name} — bundle created after the first tool call")
+                  failed += 1
+                  continue
+
+              print(f"  PASS: {bundle_path.name} — evidence complete and persisted before execution")
+
+          if failed:
+              print(f"::error::{failed} evidence-before-execution assertion(s) failed")
+              sys.exit(1)
+          print("All evidence-before-execution assertions passed.")
+          EOF
+
+      - name: Assert declared context freshness matches recorded ages
+        run: |
+          python3 - <<'EOF'
+          import json, sys, yaml
+          from datetime import datetime
+          from pathlib import Path
+
+          def parse(ts):
+              return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+
+          with open("examples/workflow.yaml") as f:
+              wf = yaml.safe_load(f)
+          thresholds = wf["workflow"]["guardrails"]["context_freshness"]
+
+          failed = 0
+          for bundle_path in sorted(Path("examples/evidence").glob("*.json")):
+              with open(bundle_path) as f:
+                  bundle = json.load(f)
+              cf = bundle["pre_execution"]["context_freshness"]
+              evaluated = parse(cf["evaluated_at"])
+
+              # Recorded ages must be arithmetically consistent with the timestamps.
+              checks = [("cmdb", "cmdb_as_of", "cmdb_age_seconds", "cmdb_max_age_seconds")]
+              if "metrics_as_of" in cf:
+                  checks.append(("metrics", "metrics_as_of", "metrics_age_seconds", "metrics_max_age_seconds"))
+
+              bad = False
+              for label, as_of_key, age_key, threshold_key in checks:
+                  computed = round((evaluated - parse(cf[as_of_key])).total_seconds())
+                  recorded = cf[age_key]
+                  if abs(computed - recorded) > 1:
+                      print(f"  FAIL: {bundle_path.name} — {label} age recorded as {recorded}s "
+                            f"but timestamps give {computed}s")
+                      bad = True
+                      break
+                  if recorded > thresholds[threshold_key]:
+                      print(f"  FAIL: {bundle_path.name} — {label} context {recorded}s old exceeds "
+                            f"declared threshold {thresholds[threshold_key]}s, yet the action executed")
+                      bad = True
+                      break
+              if bad:
+                  failed += 1
+                  continue
+              print(f"  PASS: {bundle_path.name} — context ages consistent and within thresholds")
+
+          if failed:
+              print(f"::error::{failed} freshness assertion(s) failed")
+              sys.exit(1)
+          print("All freshness assertions passed.")
           EOF
 
       - name: Install OPA
@@ -165,6 +327,28 @@ jobs:
             "examples/test-incidents/low-risk-cert-expiry.execution.json" \
             "auto-approve" || errors=$((errors + 1))
 
+          # Every other signal is benign; only the freshness gate catches this one.
+          check_decision \
+            "examples/test-incidents/stale-context-restart.json" \
+            "deny" || errors=$((errors + 1))
+
           echo ""
           [ $errors -eq 0 ] || { echo "::error::$errors semantic assertion(s) failed"; exit 1; }
           echo "All semantic assertions passed."
+
+      - name: Assert the freshness gate is what denies the stale fixture
+        run: |
+          echo "Confirming the denial reason, not just the verdict..."
+          reasons=$(opa eval \
+            --data policies/ \
+            --input examples/test-incidents/stale-context-restart.json \
+            "data.itsm.guardrails.decision.reasons" \
+            --format raw 2>/dev/null)
+          echo "  reasons: $reasons"
+          case "$reasons" in
+            *"stale CMDB context"*)
+              echo "  PASS: denial attributed to the context-freshness gate" ;;
+            *)
+              echo "::error::stale fixture was denied, but not by the freshness gate"
+              exit 1 ;;
+          esac
