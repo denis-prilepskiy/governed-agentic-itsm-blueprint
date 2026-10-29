@@ -1,34 +1,50 @@
-# Governed Agentic AI for ITSM — A Practical Blueprint
+# Governed Agentic AI for ITSM – A Practical Blueprint
 
+[![IEEE Software](https://img.shields.io/badge/IEEE%20Software-10.1109%2FMS.2026.3725235-00629B)](https://doi.org/10.1109/MS.2026.3725235)
 [![DOI](https://zenodo.org/badge/1210947361.svg)](https://doi.org/10.5281/zenodo.20256777)
 [![Validate artefacts](https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint/actions/workflows/validate.yml/badge.svg)](https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint/actions/workflows/validate.yml)
 
-## Citation
+**Companion repository to the IEEE Software article**
 
-If you use this blueprint in your work or research, please cite:
+> D. Prilepskiy, "Governed Agentic AI in IT Service Management," *IEEE Software*, 2026, doi: [10.1109/MS.2026.3725235](https://doi.org/10.1109/MS.2026.3725235)
 
-> Prilepskiy, D. (2026). *Governed Agentic AI for ITSM — A Practical Blueprint* (v0.3.0). Zenodo. https://doi.org/10.5281/zenodo.20256777
+The article sets out the architecture, the four runtime invariants, and the readiness and scope-expansion gates. This repository holds the artefacts that make them executable: workflow declarations, tool contracts, OPA policies, evidence schemas, and test incidents.
 
-BibTeX:
+## How to cite
+
+If you use or refer to this work, please cite the article:
 
 ```bibtex
-@software{prilepskiy_2026_governed_agentic_itsm,
+@article{prilepskiy_2026_governed_agentic_itsm,
+  author  = {Prilepskiy, Denis},
+  title   = {Governed Agentic {AI} in {IT} Service Management},
+  journal = {IEEE Software},
+  year    = {2026},
+  doi     = {10.1109/MS.2026.3725235}
+}
+```
+
+To cite the software artefacts themselves, use the Zenodo concept DOI, which always resolves to the latest release:
+
+```bibtex
+@software{prilepskiy_2026_governed_agentic_itsm_blueprint,
   author    = {Prilepskiy, Denis},
-  title     = {Governed Agentic AI for ITSM — A Practical Blueprint},
+  title     = {Governed Agentic {AI} for {ITSM} – A Practical Blueprint},
   year      = {2026},
   publisher = {Zenodo},
-  version   = {v0.3.0},
   doi       = {10.5281/zenodo.20256777},
   url       = {https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint}
 }
 ```
 
+The article cites release v0.3.0 specifically: [10.5281/zenodo.21862389](https://doi.org/10.5281/zenodo.21862389). Later releases change documentation only unless the changelog says otherwise.
+
 > **Start with the control plane, not the agent.  
 > The agent is the easy part.**
 
-**Status: v0.3 — reference blueprint / starter kit.** This is a working collection of schemas, policies, diagrams, and examples. It is not a runnable demo stack or production-ready framework. See [What this repo is / is not](#what-this-repo-is--is-not).
+**Status: v0.3.1 – reference blueprint / starter kit.** This is a working collection of schemas, policies, diagrams, and examples. It is not a runnable demo stack or production-ready framework. See [What this repo is / is not](#what-this-repo-is--is-not).
 
-A vendor-neutral reference architecture and ready-to-use engineering artefacts for shipping **governed agentic AI** in IT Service Management — without joining the [40% of agentic AI projects Gartner predicts will be cancelled](https://www.gartner.com/en/newsroom/press-releases/2025-06-25-gartner-predicts-over-40-percent-of-agentic-ai-projects-will-be-canceled-by-end-of-2027) by 2027.
+A vendor-neutral reference architecture and ready-to-use engineering artefacts for shipping **governed agentic AI** in IT Service Management – without joining the [40% of agentic AI projects Gartner predicts will be cancelled](https://www.gartner.com/en/newsroom/press-releases/2025-06-25-gartner-predicts-over-40-percent-of-agentic-ai-projects-will-be-canceled-by-end-of-2027) by 2027.
 
 ---
 
@@ -38,7 +54,7 @@ A vendor-neutral reference architecture and ready-to-use engineering artefacts f
 - **Platform engineers** building tool contracts and policy gates for AI agents
 - **Engineering managers** evaluating governance requirements before enabling autonomous remediation
 
-If you're looking for a vendor-specific implementation guide (ServiceNow, JSM, BMC), this isn't it — but the artefacts here work *with* any of those platforms.
+If you're looking for a vendor-specific implementation guide (ServiceNow, JSM, BMC), this isn't it – but the artefacts here work *with* any of those platforms.
 
 ## What this repo is / is not
 
@@ -118,7 +134,7 @@ The repo includes 8 tool contracts covering the most common ITSM operations. Use
 # macOS:
 brew install opa
 # Linux:
-curl -L -o opa https://openpolicyagent.org/downloads/v1.4.2/opa_linux_amd64_static
+curl -L -o opa https://github.com/open-policy-agent/opa/releases/download/v1.20.1/opa_linux_amd64_static
 chmod 755 opa && sudo mv opa /usr/local/bin/
 
 # Test: low-risk incident (should auto-approve)
@@ -133,7 +149,7 @@ opa eval \
   --input examples/test-incidents/medium-risk-multi-service.json \
   "data.itsm.guardrails.decision"
 
-# Test: high-risk incident (should require approval — contains "rollback_deployment" tool)
+# Test: high-risk incident (should require approval – contains "rollback_deployment" tool)
 opa eval \
   --data policies/ \
   --input examples/test-incidents/high-risk-deploy.json \
@@ -193,9 +209,9 @@ guardrails:
     on_stale_context: "deny_and_escalate"
 ```
 
-Ages are computed against `context.evaluated_at` — the moment of policy admission — rather than wall-clock time, so test fixtures remain reproducible indefinitely. Incidents that declare no context timestamps produce no violation, so the module is backwards compatible.
+Ages are computed against `context.evaluated_at` – the moment of policy admission – rather than wall-clock time, so test fixtures remain reproducible indefinitely. Incidents that declare no context timestamps produce no violation, so the module is backwards compatible.
 
-`examples/test-incidents/stale-context-restart.json` exercises this: every other signal is benign — low risk score, single declared service, allowed category, inside the change window — and only the freshness gate denies it.
+`examples/test-incidents/stale-context-restart.json` exercises this: every other signal is benign – low risk score, single declared service, allowed category, inside the change window – and only the freshness gate denies it.
 
 ```bash
 # Test: stale context (should deny, with the freshness gate named in the reasons)
@@ -276,23 +292,23 @@ governed-agentic-itsm-blueprint/
 
 ## Contributing
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for guidelines. The most valuable contributions are [adaptation reports](.github/ISSUE_TEMPLATE/adaptation-report.md) — real-world feedback on what worked and what didn't.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for guidelines. The most valuable contributions are [adaptation reports](.github/ISSUE_TEMPLATE/adaptation-report.md) – real-world feedback on what worked and what didn't.
 
 ## Related work
 
-- [Model Context Protocol (MCP) Specification](https://modelcontextprotocol.io/specification/2025-03-26)
+- [Model Context Protocol (MCP) Specification](https://modelcontextprotocol.io/specification/2025-11-25)
 - [Agent2Agent Protocol (A2A)](https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/)
 - [Open Policy Agent (OPA)](https://www.openpolicyagent.org/docs)
 - [OpenTelemetry](https://opentelemetry.io/docs/)
 - [ISO/IEC 42001 Explained](https://www.iso.org/home/insights-news/resources/iso-42001-explained-what-it-is.html)
 - [NIST AI RMF 1.0](https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-ai-rmf-10)
-- [EU AI Act — Entry into force](https://commission.europa.eu/news-and-media/news/ai-act-enters-force-2024-08-01_en)
+- [EU AI Act – Entry into force](https://commission.europa.eu/news-and-media/news/ai-act-enters-force-2024-08-01_en)
 
 ## License
 
-Apache 2.0 — see [LICENSE](LICENSE).
+Apache 2.0 – see [LICENSE](LICENSE).
 
 ---
 
-**Author:** Denis Prilepskiy — Agentic AI architect specialising in production-grade multi-agent systems for regulated industries. Senior Enterprise Architect at NTT Data (London). Published in HackerNoon (Top Story) and MIPT Digital (Habr), with IEEE and HBR submissions under review.
-HackerNoon @denisp · [LinkedIn](https://www.linkedin.com/in/denisprilepskiy/)
+**Author:** Denis Prilepskiy – enterprise architect, London. Author of "Governed Agentic AI in IT Service Management" ([IEEE Software, 2026](https://doi.org/10.1109/MS.2026.3725235)); also published in HackerNoon (Top Story) and MIPT Digital (Habr).
+HackerNoon @denisp · [LinkedIn](https://www.linkedin.com/in/denisprilepskiy/) · [ORCID](https://orcid.org/0009-0000-4020-8277)

@@ -1,14 +1,22 @@
 cff-version: 1.2.0
-title: "Governed Agentic AI for ITSM — A Practical Blueprint"
-version: 0.3.0
+title: "Governed Agentic AI for ITSM – A Practical Blueprint"
+version: 0.3.1
 license: "Apache-2.0"
 type: software
-message: "If you use this blueprint, please cite it as below."
-abstract: "A vendor-neutral reference architecture and engineering artefact collection for governing agentic AI in IT Service Management, including tool contracts, OPA/Rego policies, evidence schemas with plan-hash binding and context-freshness admission, governance mappings, and an autonomy maturity model."
+message: "If you use or refer to this work, please cite the IEEE Software article below."
+abstract: "A vendor-neutral reference architecture and engineering artefact collection for governing agentic AI in IT Service Management, including tool contracts, OPA/Rego policies, evidence schemas with plan-hash binding and context-freshness admission, governance mappings, and an autonomy maturity model. Companion repository to the IEEE Software article 'Governed Agentic AI in IT Service Management'."
 authors:
   - given-names: Denis
     family-names: Prilepskiy
-    affiliation: "London-based enterprise architect"
+    orcid: "https://orcid.org/0009-0000-4020-8277"
+    affiliation: "London, UK"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.20256777
+    description: "Concept DOI for all versions of this software"
+  - type: doi
+    value: 10.1109/MS.2026.3725235
+    description: "Companion article in IEEE Software"
 keywords:
   - agentic AI
   - ITSM
@@ -20,3 +28,17 @@ keywords:
   - NIST AI RMF
   - EU AI Act
 repository-code: "https://github.com/denis-prilepskiy/governed-agentic-itsm-blueprint"
+preferred-citation:
+  type: article
+  title: "Governed Agentic AI in IT Service Management"
+  authors:
+    - given-names: Denis
+      family-names: Prilepskiy
+      orcid: "https://orcid.org/0009-0000-4020-8277"
+  journal: "IEEE Software"
+  publisher:
+    name: "IEEE"
+  year: 2026
+  doi: 10.1109/MS.2026.3725235
+  url: "https://doi.org/10.1109/MS.2026.3725235"
+  status: advance-online

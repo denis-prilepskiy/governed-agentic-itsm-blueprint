@@ -1,0 +1,32 @@
+{
+  "title": "Governed Agentic AI for ITSM – A Practical Blueprint",
+  "upload_type": "software",
+  "description": "<p>A vendor-neutral reference architecture and engineering artefact collection for governing agentic AI in IT Service Management: typed tool contracts with safety metadata, executable OPA/Rego policies, evidence schemas with plan-hash binding and context-freshness admission, governance mappings, and an autonomy maturity model.</p><p>Companion repository to the IEEE Software article <em>Governed Agentic AI in IT Service Management</em> (doi:10.1109/MS.2026.3725235). The article cites release v0.3.0.</p>",
+  "creators": [
+    {
+      "name": "Prilepskiy, Denis",
+      "orcid": "0009-0000-4020-8277",
+      "affiliation": "London, UK"
+    }
+  ],
+  "license": "Apache-2.0",
+  "keywords": [
+    "agentic AI",
+    "ITSM",
+    "AIOps",
+    "enterprise architecture",
+    "AI governance",
+    "Open Policy Agent",
+    "ISO/IEC 42001",
+    "NIST AI RMF",
+    "EU AI Act"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.1109/MS.2026.3725235",
+      "relation": "isSupplementTo",
+      "resource_type": "publication-article",
+      "scheme": "doi"
+    }
+  ]
+}

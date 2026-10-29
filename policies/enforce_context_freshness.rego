@@ -3,7 +3,7 @@
 # The fourth runtime invariant: an agent must not act on a service graph,
 # CMDB record, or telemetry snapshot older than the declared threshold.
 # Stale context is the failure mode behind most "the model did exactly what
-# it was told" outages — the plan is correct for a topology that no longer
+# it was told" outages – the plan is correct for a topology that no longer
 # exists.
 #
 # Ages are computed against `input.context.evaluated_at` (the moment of
@@ -64,7 +64,7 @@ violation contains msg if {
 	age := age_seconds(input.context.cmdb_as_of)
 	age > cmdb_max_age_seconds
 	msg := sprintf(
-		"stale CMDB context: %v s old, declared freshness threshold is %v s — routing to the human fallback path",
+		"stale CMDB context: %v s old, declared freshness threshold is %v s – routing to the human fallback path",
 		[age, cmdb_max_age_seconds],
 	)
 }
@@ -73,7 +73,7 @@ violation contains msg if {
 	age := age_seconds(input.context.metrics_as_of)
 	age > metrics_max_age_seconds
 	msg := sprintf(
-		"stale telemetry context: %v s old, declared freshness threshold is %v s — routing to the human fallback path",
+		"stale telemetry context: %v s old, declared freshness threshold is %v s – routing to the human fallback path",
 		[age, metrics_max_age_seconds],
 	)
 }

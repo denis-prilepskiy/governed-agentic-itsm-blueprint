@@ -1,5 +1,5 @@
 {
-  "_comment": "Second reference bundle: the approval path. Demonstrates the third runtime invariant — the operator approval carries the plan_hash it authorises and an explicit expiry. CI asserts that policy_decision.approval.plan_hash equals pre_execution.plan_hash. Any re-planning changes the hash and invalidates this approval.",
+  "_comment": "Second reference bundle: the approval path. Demonstrates the third runtime invariant – the operator approval carries the plan_hash it authorises and an explicit expiry. CI asserts that policy_decision.approval.plan_hash equals pre_execution.plan_hash. Any re-planning changes the hash and invalidates this approval.",
   "bundle_id": "eb-2025-04833-001",
   "incident_id": "INC-2025-04833",
   "change_id": "CHG-2025-08902",

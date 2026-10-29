@@ -1,4 +1,4 @@
-# Deny prohibited tools — hard block, no override
+# Deny prohibited tools – hard block, no override
 #
 # Tools in this list are never allowed regardless of risk score,
 # approval status, or incident category.

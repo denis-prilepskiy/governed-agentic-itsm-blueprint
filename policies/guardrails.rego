@@ -1,4 +1,4 @@
-# Main guardrails policy — aggregates decisions from all policy modules
+# Main guardrails policy – aggregates decisions from all policy modules
 #
 # Two modes of operation:
 #
@@ -9,7 +9,7 @@
 #
 #    Fallback logic (risk score, blast radius, prohibited tools, category)
 #    is always active and sufficient for basic evaluation. Context-freshness
-#    enforcement is NOT part of the fallback logic — it requires the full pack.
+#    enforcement is NOT part of the fallback logic – it requires the full pack.
 #
 # 2. Full policy pack (recommended):
 #    opa eval --data policies/ \
@@ -38,7 +38,7 @@ package itsm.guardrails
 import rego.v1
 
 # ─── Configuration ───────────────────────────────────────────────────────────
-# Concrete tool contract names — kept in sync with schemas/tool-*.json
+# Concrete tool contract names – kept in sync with schemas/tool-*.json
 
 _allowed_categories := {"cert-expiry", "svc-restart", "dns-misconfig"}
 
@@ -63,7 +63,7 @@ _required_evidence_fields := [
 
 # ─── Module aggregation ──────────────────────────────────────────────────────
 # When loaded with --data policies/, these collect violations from all modules.
-# When loaded standalone, module packages are undefined and sets are empty —
+# When loaded standalone, module packages are undefined and sets are empty –
 # the fallback checks below handle evaluation in that case.
 
 _module_deny_violations contains v if {
@@ -138,7 +138,7 @@ _all_soft_violations := _module_soft_violations | _fallback_soft_violations
 
 # ─── Obligations ─────────────────────────────────────────────────────────────
 # Constraints returned alongside every admitting verdict. The policy engine
-# does not only answer "may this run?" — it answers "under what conditions".
+# does not only answer "may this run?" – it answers "under what conditions".
 
 _constraints(max_calls) := {
 	"max_tool_calls": max_calls,
@@ -152,9 +152,9 @@ _constraints(max_calls) := {
 
 # ─── Decision ────────────────────────────────────────────────────────────────
 # Outputs the `decision` field required by schemas/policy-decision.schema.json:
-#   deny                 — plan must not proceed
-#   needs-human-approval — plan may proceed after sign-off
-#   auto-approve         — plan may proceed automatically
+#   deny                 – plan must not proceed
+#   needs-human-approval – plan may proceed after sign-off
+#   auto-approve         – plan may proceed automatically
 
 default decision := {
 	"decision": "deny",
