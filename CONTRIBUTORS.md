@@ -1,7 +1,7 @@
 # Contributors
 
 ## Maintainer & Primary Author
-**Denis Prilepskiy** — architecture design, schema specification, OPA policy authoring, 
+**Denis Prilepskiy** – architecture design, schema specification, OPA policy authoring, 
 maturity model, governance framework mapping, documentation
 
 ## Acknowledgements

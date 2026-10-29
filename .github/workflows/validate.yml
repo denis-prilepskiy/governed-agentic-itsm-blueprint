@@ -136,12 +136,12 @@ jobs:
               approval = (pre.get("policy_decision") or {}).get("approval")
 
               if not approval:
-                  print(f"  SKIP: {bundle_path.name} — no approval (auto-approve path)")
+                  print(f"  SKIP: {bundle_path.name} – no approval (auto-approve path)")
                   continue
 
               # Invariant 3: approval binds to a concrete plan.
               if approval.get("plan_hash") != pre.get("plan_hash"):
-                  print(f"  FAIL: {bundle_path.name} — approval.plan_hash "
+                  print(f"  FAIL: {bundle_path.name} – approval.plan_hash "
                         f"{approval.get('plan_hash')!r} does not match "
                         f"pre_execution.plan_hash {pre.get('plan_hash')!r}")
                   failed += 1
@@ -149,7 +149,7 @@ jobs:
 
               # The approval window must be non-empty and must open at approval time.
               if parse(approval["valid_until"]) <= parse(approval["approved_at"]):
-                  print(f"  FAIL: {bundle_path.name} — valid_until is not after approved_at")
+                  print(f"  FAIL: {bundle_path.name} – valid_until is not after approved_at")
                   failed += 1
                   continue
 
@@ -157,11 +157,11 @@ jobs:
               calls = ((bundle.get("post_execution") or {}).get("execution_log") or {}).get("tool_calls", [])
               starts = [parse(c["started_at"]) for c in calls if c.get("started_at")]
               if starts and max(starts) > parse(approval["valid_until"]):
-                  print(f"  FAIL: {bundle_path.name} — a tool call started after the approval expired")
+                  print(f"  FAIL: {bundle_path.name} – a tool call started after the approval expired")
                   failed += 1
                   continue
 
-              print(f"  PASS: {bundle_path.name} — approval bound to plan hash, within window")
+              print(f"  PASS: {bundle_path.name} – approval bound to plan hash, within window")
 
           if failed:
               print(f"::error::{failed} approval-binding assertion(s) failed")
@@ -194,7 +194,7 @@ jobs:
               # Invariant 1: the pre-execution record is complete before any side effect.
               missing = [k for k in REQUIRED if k not in pre]
               if missing:
-                  print(f"  FAIL: {bundle_path.name} — missing pre-execution fields: {missing}")
+                  print(f"  FAIL: {bundle_path.name} – missing pre-execution fields: {missing}")
                   failed += 1
                   continue
 
@@ -202,7 +202,7 @@ jobs:
               named = set(pre["remediation_plan"].get("tools_required", []))
               versioned = set(pre["tool_contract_versions"])
               if not named <= versioned:
-                  print(f"  FAIL: {bundle_path.name} — no contract version recorded for "
+                  print(f"  FAIL: {bundle_path.name} – no contract version recorded for "
                         f"{sorted(named - versioned)}")
                   failed += 1
                   continue
@@ -211,11 +211,11 @@ jobs:
               calls = ((bundle.get("post_execution") or {}).get("execution_log") or {}).get("tool_calls", [])
               starts = [parse(c["started_at"]) for c in calls if c.get("started_at")]
               if starts and parse(bundle["created_at"]) > min(starts):
-                  print(f"  FAIL: {bundle_path.name} — bundle created after the first tool call")
+                  print(f"  FAIL: {bundle_path.name} – bundle created after the first tool call")
                   failed += 1
                   continue
 
-              print(f"  PASS: {bundle_path.name} — evidence complete and persisted before execution")
+              print(f"  PASS: {bundle_path.name} – evidence complete and persisted before execution")
 
           if failed:
               print(f"::error::{failed} evidence-before-execution assertion(s) failed")
@@ -254,19 +254,19 @@ jobs:
                   computed = round((evaluated - parse(cf[as_of_key])).total_seconds())
                   recorded = cf[age_key]
                   if abs(computed - recorded) > 1:
-                      print(f"  FAIL: {bundle_path.name} — {label} age recorded as {recorded}s "
+                      print(f"  FAIL: {bundle_path.name} – {label} age recorded as {recorded}s "
                             f"but timestamps give {computed}s")
                       bad = True
                       break
                   if recorded > thresholds[threshold_key]:
-                      print(f"  FAIL: {bundle_path.name} — {label} context {recorded}s old exceeds "
+                      print(f"  FAIL: {bundle_path.name} – {label} context {recorded}s old exceeds "
                             f"declared threshold {thresholds[threshold_key]}s, yet the action executed")
                       bad = True
                       break
               if bad:
                   failed += 1
                   continue
-              print(f"  PASS: {bundle_path.name} — context ages consistent and within thresholds")
+              print(f"  PASS: {bundle_path.name} – context ages consistent and within thresholds")
 
           if failed:
               print(f"::error::{failed} freshness assertion(s) failed")
@@ -285,7 +285,7 @@ jobs:
           opa check policies/
           echo "All Rego files pass syntax check."
 
-      - name: Evaluate test incidents — semantic assertions
+      - name: Evaluate test incidents – semantic assertions
         run: |
           echo "Evaluating test incidents against full policy pack..."
           echo ""

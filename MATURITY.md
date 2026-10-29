@@ -1,18 +1,18 @@
 # Maturity Model: From Chatbot to Governed Autonomous Agent
 
-This model ties **autonomy** to **required controls** — you cannot safely advance a level without the governance infrastructure to support it.
+This model ties **autonomy** to **required controls** – you cannot safely advance a level without the governance infrastructure to support it.
 
 > **Maturity is organisational; readiness is per incident class.** This model
 > describes how far an organisation has built out its control plane. It does not
 > decide whether a *particular* incident category may be automated. That is a
-> separate, binary test — the readiness gate — and an L4 organisation still
+> separate, binary test – the readiness gate – and an L4 organisation still
 > fails it for incident classes with no rollback path or no fresh service data:
 >
 > 1. the resolution path is stable and repeatable;
 > 2. affected services, ownership, and dependencies are known within declared freshness limits;
 > 3. every mutating action is exposed through a versioned tool contract;
 > 4. service-level success and rollback can be verified automatically;
-> 5. the fallback path has a named human owner and an SLA.
+> 5. the fallback path has a named human owner and an SLA
 >
 > If any gate fails, start with decision support or supervised execution for that
 > class, regardless of the maturity level you have reached elsewhere.
@@ -69,7 +69,7 @@ For each dimension below, identify where you are today:
 
 Moving from L1 to L2 requires: a policy engine (even a simple one), evidence bundling, and at least partial tool contracts.
 
-Moving from L2 to L3 requires: the artefacts in this repository — typed tool contracts with safety metadata, OPA/Rego policies, a validation contract, and distributed tracing.
+Moving from L2 to L3 requires: the artefacts in this repository – typed tool contracts with safety metadata, OPA/Rego policies, a validation contract, and distributed tracing.
 
 Moving from L3 to L4 requires: offline evaluation harness, governance framework mapping, continuous service model validation, and a proven track record of zero automation-caused incidents.
 

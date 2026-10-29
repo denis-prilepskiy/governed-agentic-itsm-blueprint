@@ -7,7 +7,7 @@
 # Normalises environment data from multiple possible input shapes:
 #   input.context.environments        (array)
 #   input.context.environment         (string)
-#   input.blast_radius.environments   (array — used in test fixtures)
+#   input.blast_radius.environments   (array – used in test fixtures)
 
 package itsm.guardrails.enforce_environment_exclusions
 

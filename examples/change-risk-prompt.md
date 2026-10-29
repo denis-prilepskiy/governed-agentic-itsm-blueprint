@@ -1,4 +1,4 @@
-# Change Risk Assessment — Structured Prompt Template
+# Change Risk Assessment – Structured Prompt Template
 
 Use this prompt with any LLM to produce a **repeatable, comparable, machine-parseable** risk assessment for IT changes. The JSON output can be fed directly into the policy engine for approval routing.
 

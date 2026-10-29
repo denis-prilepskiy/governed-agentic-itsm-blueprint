@@ -32,7 +32,7 @@
         "needs-human-approval",
         "deny"
       ],
-      "description": "Summary verdict — must match guardrails.rego output"
+      "description": "Summary verdict – must match guardrails.rego output"
     },
     "reasons": {
       "type": "array",

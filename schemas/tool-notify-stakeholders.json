@@ -1,7 +1,7 @@
 {
   "tool": "notify_stakeholders",
   "version": "1.0.0",
-  "description": "Send notifications to service owners, on-call engineers, or affected teams about an incident or remediation action. Read-only and safe — no system changes.",
+  "description": "Send notifications to service owners, on-call engineers, or affected teams about an incident or remediation action. Read-only and safe – no system changes.",
   "owner": "service-management",
   "input_schema": {
     "type": "object",

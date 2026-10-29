@@ -40,6 +40,6 @@
     "privilege_level": "platform-admin",
     "audit_required": true,
     "always_requires_approval": true,
-    "notes": "Classified as high-risk tool in guardrails.rego — always routed to human approval regardless of risk score."
+    "notes": "Classified as high-risk tool in guardrails.rego – always routed to human approval regardless of risk score."
   }
 }
